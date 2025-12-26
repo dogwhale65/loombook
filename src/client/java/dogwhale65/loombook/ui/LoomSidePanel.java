@@ -17,7 +17,7 @@ import java.util.List;
  * Side panel UI for the loom screen showing saved banner patterns.
  */
 public class LoomSidePanel {
-    public static final int PANEL_WIDTH = 90;
+    public static final int PANEL_WIDTH = 150;
     public static final int PANEL_HEIGHT = 166;
     private static final int ENTRY_HEIGHT = 24;
     private static final int HEADER_HEIGHT = 14;
@@ -97,12 +97,23 @@ public class LoomSidePanel {
             // Draw banner preview
             BannerPreviewRenderer.render(context, banner, handler, x + PADDING + 2, entryY + 2, 18);
 
-            // Draw name (truncated)
+            // Draw name (truncated to fit available space)
             String name = banner.getDisplayName();
-            if (name.length() > 6) {
-                name = name.substring(0, 5) + "..";
+            int maxNameWidth = PANEL_WIDTH - PADDING - 22 - 40; // Account for preview, padding, and buttons
+            String displayName = name;
+            while (displayName.length() > 0 && textRenderer.getWidth(displayName) > maxNameWidth) {
+                displayName = displayName.substring(0, displayName.length() - 1);
             }
-            context.drawText(textRenderer, Text.literal(name), x + PADDING + 22, entryY + 8, 0xFFFFFFFF, true);
+            if (!displayName.equals(name)) {
+                displayName = displayName.substring(0, Math.max(0, displayName.length() - 2)) + "..";
+            }
+            context.drawText(textRenderer, Text.literal(displayName), x + PADDING + 22, entryY + 8, 0xFFFFFFFF, true);
+
+            // Draw rename button
+            int renameX = x + PANEL_WIDTH - PADDING - 28;
+            boolean renameHovered = mouseX >= renameX && mouseX < renameX + 12 && mouseY >= entryY + 4 && mouseY < entryY + 18;
+            int renameColor = renameHovered ? 0xFF4169E1 : 0xFFAAAAAA;
+            context.drawText(textRenderer, Text.literal("E"), renameX + 2, entryY + 7, renameColor, true);
 
             // Draw delete button
             int deleteX = x + PANEL_WIDTH - PADDING - 12;
@@ -120,11 +131,11 @@ public class LoomSidePanel {
             context.drawText(textRenderer, Text.literal("Craft"), x + PANEL_WIDTH / 2 - 12, craftButtonY + 2, 0xFFFFFFFF, true);
         }
 
-        // Draw scroll indicators if needed
+        // Draw scroll indicators if needed (only if no craft button is showing)
         if (scrollOffset > 0) {
             context.drawText(textRenderer, Text.literal("^"), x + PANEL_WIDTH / 2 - 2, listStartY - 10, 0xFFFFFFFF, true);
         }
-        if (scrollOffset + maxVisible < banners.size()) {
+        if (scrollOffset + maxVisible < banners.size() && selectedBannerId == null) {
             context.drawText(textRenderer, Text.literal("v"), x + PANEL_WIDTH / 2 - 2, y + PANEL_HEIGHT - 12, 0xFFFFFFFF, true);
         }
 
@@ -191,6 +202,13 @@ public class LoomSidePanel {
             int entryY = listStartY + i * ENTRY_HEIGHT;
 
             if (isInPatternEntry(mx, my, entryY)) {
+                // Check if rename button clicked
+                int renameX = x + PANEL_WIDTH - PADDING - 26;
+                if (mx >= renameX && mx < renameX + 10 && my >= entryY + 6 && my < entryY + 16) {
+                    MinecraftClient.getInstance().setScreen(new RenameBannerScreen(screen, banner.getId(), banner.getName()));
+                    return true;
+                }
+
                 // Check if delete button clicked
                 int deleteX = x + PANEL_WIDTH - PADDING - 10;
                 if (mx >= deleteX && mx < deleteX + 10 && my >= entryY + 6 && my < entryY + 16) {

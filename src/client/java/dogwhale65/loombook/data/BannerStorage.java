@@ -2,9 +2,14 @@ package dogwhale65.loombook.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import dogwhale65.loombook.Loombook;
+import dogwhale65.loombook.data.BannerPatternLayer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.util.DyeColor;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -15,6 +20,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Manages persistence of saved banner patterns to a JSON file.
@@ -115,6 +122,15 @@ public class BannerStorage {
                 .orElse(null);
     }
 
+    public void renameBanner(String id, String newName) {
+        SavedBanner banner = getBannerById(id);
+        if (banner != null) {
+            banner.setName(newName);
+            saveBannerToFile(banner);
+            Loombook.LOGGER.info("Renamed banner {} to '{}'", id, newName);
+        }
+    }
+
     /**
      * Exports a banner to JSON string format for sharing/backup
      */
@@ -127,11 +143,24 @@ public class BannerStorage {
     }
 
     /**
-     * Imports a banner from JSON string format
+     * Imports a banner from JSON string format or /give command format
+     * Auto-detects the format and parses accordingly
      */
-    public SavedBanner importBannerFromJson(String jsonString) {
+    public SavedBanner importBannerFromJson(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return null;
+        }
+
+        input = input.trim();
+
+        // Try to detect if it's a /give command
+        if (input.startsWith("/give")) {
+            return importBannerFromGiveCommand(input);
+        }
+
+        // Otherwise, try to parse as JSON
         try {
-            SavedBanner banner = GSON.fromJson(jsonString, SavedBanner.class);
+            SavedBanner banner = GSON.fromJson(input, SavedBanner.class);
             if (banner != null) {
                 // Check if banner with this ID already exists
                 if (getBannerById(banner.getId()) != null) {
@@ -145,5 +174,93 @@ public class BannerStorage {
             Loombook.LOGGER.error("Failed to import banner from JSON", e);
         }
         return null;
+    }
+
+    /**
+     * Parses a /give command and extracts banner data
+     * Example: /give @p minecraft:white_banner[banner_patterns=[{"pattern":"small_stripes","color":"lime"}]] 1
+     */
+    private SavedBanner importBannerFromGiveCommand(String command) {
+        try {
+            // Extract the banner item type
+            Pattern itemPattern = Pattern.compile("minecraft:(\\w+)_banner");
+            Matcher itemMatcher = itemPattern.matcher(command);
+            if (!itemMatcher.find()) {
+                Loombook.LOGGER.error("Could not find banner item in /give command");
+                return null;
+            }
+
+            String colorName = itemMatcher.group(1);
+            DyeColor baseColor = parseDyeColor(colorName);
+            if (baseColor == null) {
+                Loombook.LOGGER.error("Unknown banner color: {}", colorName);
+                return null;
+            }
+
+            // Extract the banner_patterns component
+            Pattern patternsPattern = Pattern.compile("banner_patterns=\\[(.*?)\\](?:\\]|,)");
+            Matcher patternsMatcher = patternsPattern.matcher(command);
+
+            List<BannerPatternLayer> layers = new ArrayList<>();
+
+            if (patternsMatcher.find()) {
+                String patternsJson = "[" + patternsMatcher.group(1) + "]";
+                try {
+                    JsonArray patternsArray = GSON.fromJson(patternsJson, JsonArray.class);
+                    for (JsonElement element : patternsArray) {
+                        if (element.isJsonObject()) {
+                            JsonObject patternObj = element.getAsJsonObject();
+                            String patternId = patternObj.get("pattern").getAsString();
+                            String colorStr = patternObj.get("color").getAsString();
+
+                            DyeColor dyeColor = parseDyeColor(colorStr);
+                            if (dyeColor != null) {
+                                // Convert pattern name to minecraft namespace
+                                String fullPatternId = "minecraft:" + patternId;
+                                layers.add(BannerPatternLayer.of(fullPatternId, dyeColor));
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    Loombook.LOGGER.error("Failed to parse banner patterns from /give command", e);
+                    return null;
+                }
+            }
+
+            SavedBanner banner = new SavedBanner(null, baseColor, layers);
+            addBanner(banner);
+            return banner;
+
+        } catch (Exception e) {
+            Loombook.LOGGER.error("Failed to import banner from /give command", e);
+        }
+        return null;
+    }
+
+    /**
+     * Parses a dye color name to DyeColor enum
+     */
+    private DyeColor parseDyeColor(String colorName) {
+        if (colorName == null) return null;
+
+        return switch (colorName.toLowerCase()) {
+            case "white" -> DyeColor.WHITE;
+            case "orange" -> DyeColor.ORANGE;
+            case "magenta" -> DyeColor.MAGENTA;
+            case "light_blue" -> DyeColor.LIGHT_BLUE;
+            case "yellow" -> DyeColor.YELLOW;
+            case "lime" -> DyeColor.LIME;
+            case "pink" -> DyeColor.PINK;
+            case "gray" -> DyeColor.GRAY;
+            case "light_gray" -> DyeColor.LIGHT_GRAY;
+            case "cyan" -> DyeColor.CYAN;
+            case "purple" -> DyeColor.PURPLE;
+            case "blue" -> DyeColor.BLUE;
+            case "brown" -> DyeColor.BROWN;
+            case "green" -> DyeColor.GREEN;
+            case "red" -> DyeColor.RED;
+            case "black" -> DyeColor.BLACK;
+            default -> null;
+        };
     }
 }

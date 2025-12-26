@@ -59,6 +59,14 @@ public class AutoCraftStateMachine {
         this.currentLayerIndex = 0;
         this.ticksInState = 0;
         this.errorMessage = null;
+        
+        // Validate all materials before starting
+        String validationError = validateAllMaterials(banner);
+        if (validationError != null) {
+            error(validationError);
+            return;
+        }
+        
         this.state = AutoCraftState.CHECKING_MATERIALS;
         Loombook.LOGGER.info("Starting auto-craft for banner with {} layers", banner.getLayers().size());
     }
@@ -105,27 +113,7 @@ public class AutoCraftStateMachine {
     }
 
     private void checkMaterials() {
-        // Check if we have the base banner
-        if (currentLayerIndex == 0) {
-            Item bannerItem = targetBanner.getBaseBannerItem();
-            int bannerSlotId = findBlankBannerInInventory(bannerItem);
-            if (bannerSlotId < 0 && handler.getSlot(BANNER_SLOT).getStack().isEmpty()) {
-                error("Missing base banner");
-                return;
-            }
-        }
-
-        // Check if we have dye for current layer
-        if (currentLayerIndex < targetBanner.getLayers().size()) {
-            BannerPatternLayer layer = targetBanner.getLayers().get(currentLayerIndex);
-            Item dyeItem = SavedBanner.getDyeItem(layer.getDyeColorEnum());
-            int dyeSlotId = findItemInInventory(dyeItem);
-            if (dyeSlotId < 0 && handler.getSlot(DYE_SLOT).getStack().isEmpty()) {
-                error("Missing " + layer.getDyeColorEnum().getId() + " dye");
-                return;
-            }
-        }
-
+        // All materials have been validated in start(), just proceed
         state = AutoCraftState.PLACING_BANNER;
     }
 
@@ -272,6 +260,8 @@ public class AutoCraftStateMachine {
             } else {
                 // Last layer - move to inventory
                 client.interactionManager.clickSlot(handler.syncId, OUTPUT_SLOT, 0, SlotActionType.QUICK_MOVE, client.player);
+                // Return pattern items to inventory
+                returnPatternItemsToInventory();
             }
         }
         state = AutoCraftState.LAYER_COMPLETE;
@@ -344,5 +334,55 @@ public class AutoCraftStateMachine {
         if (patternId.contains("flow")) return Items.FLOW_BANNER_PATTERN;
         if (patternId.contains("guster")) return Items.GUSTER_BANNER_PATTERN;
         return null;
+    }
+
+    /**
+     * Validates that all required materials are available before starting the craft
+     * Returns an error message if validation fails, null if all materials are available
+     */
+    private String validateAllMaterials(SavedBanner banner) {
+        // Check for base banner
+        Item bannerItem = banner.getBaseBannerItem();
+        int bannerSlotId = findBlankBannerInInventory(bannerItem);
+        if (bannerSlotId < 0 && handler.getSlot(BANNER_SLOT).getStack().isEmpty()) {
+            return "Missing base banner";
+        }
+
+        // Check for all dyes and pattern items
+        for (int i = 0; i < banner.getLayers().size(); i++) {
+            BannerPatternLayer layer = banner.getLayers().get(i);
+            
+            // Check dye
+            Item dyeItem = SavedBanner.getDyeItem(layer.getDyeColorEnum());
+            int dyeSlotId = findItemInInventory(dyeItem);
+            if (dyeSlotId < 0 && handler.getSlot(DYE_SLOT).getStack().isEmpty()) {
+                return "Missing " + layer.getDyeColorEnum().getId() + " dye for pattern " + (i + 1);
+            }
+
+            // Check pattern item if required
+            Item patternItem = getRequiredPatternItem(layer.patternId());
+            if (patternItem != null) {
+                int patternSlotId = findItemInInventory(patternItem);
+                if (patternSlotId < 0 && handler.getSlot(PATTERN_SLOT).getStack().isEmpty()) {
+                    return "Missing " + patternItem.getName().getString() + " for pattern " + (i + 1);
+                }
+            }
+        }
+
+        return null; // All materials available
+    }
+
+    /**
+     * Returns pattern items to inventory after crafting is complete
+     */
+    private void returnPatternItemsToInventory() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.interactionManager != null && client.player != null) {
+            ItemStack patternSlot = handler.getSlot(PATTERN_SLOT).getStack();
+            if (!patternSlot.isEmpty()) {
+                // Move pattern item back to inventory
+                client.interactionManager.clickSlot(handler.syncId, PATTERN_SLOT, 0, SlotActionType.QUICK_MOVE, client.player);
+            }
+        }
     }
 }

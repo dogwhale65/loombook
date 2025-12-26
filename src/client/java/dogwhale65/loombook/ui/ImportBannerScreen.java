@@ -36,8 +36,8 @@ public class ImportBannerScreen extends Screen {
         context.drawBorder(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
 
         // Draw title
-        context.drawText(this.textRenderer, Text.literal("Paste Banner JSON"),
-            this.width / 2 - 60, editorY - 20, 0xFFFFFFFF, true);
+        context.drawText(this.textRenderer, Text.literal("Paste Banner JSON or /give Command"),
+            this.width / 2 - 120, editorY - 20, 0xFFFFFFFF, true);
 
         // Draw text content with scrolling
         int textStartX = editorX + PADDING;
@@ -239,18 +239,19 @@ public class ImportBannerScreen extends Screen {
     }
 
     private void importBanner() {
-        String json = textBuffer.toString().trim();
-        if (json.isEmpty()) {
+        String input = textBuffer.toString().trim();
+        if (input.isEmpty()) {
             Loombook.LOGGER.warn("Import text is empty");
             return;
         }
 
         BannerStorage storage = BannerStorage.getInstance();
-        if (storage.importBannerFromJson(json) != null) {
+        if (storage.importBannerFromJson(input) != null) {
             Loombook.LOGGER.info("Banner imported successfully");
             this.client.setScreen(previousScreen);
         } else {
-            Loombook.LOGGER.error("Failed to import banner - invalid JSON");
+            String format = input.startsWith("/give") ? "/give command" : "JSON";
+            Loombook.LOGGER.error("Failed to import banner - invalid {}", format);
         }
     }
 
