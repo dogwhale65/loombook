@@ -15,13 +15,8 @@ import net.minecraft.component.type.BannerPatternsComponent;
 
 import java.util.List;
 
-/**
- * State machine for automatically crafting multi-layer banners.
- */
 public class AutoCraftStateMachine {
     private static final int TICK_DELAY = 3;
-
-    // Loom slot indices
     private static final int BANNER_SLOT = 0;
     private static final int DYE_SLOT = 1;
     private static final int PATTERN_SLOT = 2;
@@ -60,7 +55,6 @@ public class AutoCraftStateMachine {
         this.ticksInState = 0;
         this.errorMessage = null;
         
-        // Validate all materials before starting
         String validationError = validateAllMaterials(banner);
         if (validationError != null) {
             error(validationError);

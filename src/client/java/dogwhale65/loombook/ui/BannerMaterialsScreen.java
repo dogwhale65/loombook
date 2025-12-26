@@ -56,17 +56,21 @@ public class BannerMaterialsScreen extends Screen {
         // Draw title
         context.drawText(this.textRenderer, Text.literal("Required Materials"), contentX + PADDING, contentY + PADDING, 0xFF4169E1, true);
 
+        // Draw crafting order header
+        context.drawText(this.textRenderer, Text.literal("Crafting Order:"), contentX + PADDING, contentY + PADDING + 15, 0xFF4169E1, true);
+
         // Draw banner base color
         String baseColorName = banner.getBaseColorEnum().asString();
         ItemStack baseStack = new ItemStack(banner.getBaseBannerItem());
-        context.drawItem(baseStack, contentX + PADDING, contentY + PADDING + 15);
-        context.drawText(this.textRenderer, Text.literal(baseColorName + " Banner"), contentX + PADDING + 20, contentY + PADDING + 18, 0xFFFFFFFF, true);
+        context.drawItem(baseStack, contentX + PADDING, contentY + PADDING + 28);
+        context.drawText(this.textRenderer, Text.literal("1. " + baseColorName + " Banner"), contentX + PADDING + 20, contentY + PADDING + 31, 0xFFFFFFFF, true);
 
-        // Draw materials list
-        int materialY = contentY + PADDING + 40;
+        // Draw materials list with step numbers
+        int materialY = contentY + PADDING + 50;
         int maxHeight = CONTENT_HEIGHT - PADDING * 2 - 50;
         
         List<MaterialEntry> materials = getMaterialsList();
+        int stepNumber = 2;
         
         for (int i = scrollOffset; i < materials.size() && materialY < contentY + CONTENT_HEIGHT - 30; i++) {
             MaterialEntry entry = materials.get(i);
@@ -74,10 +78,14 @@ public class BannerMaterialsScreen extends Screen {
             // Draw item
             context.drawItem(entry.stack, contentX + PADDING, materialY - 2);
             
-            // Draw text
-            String text = entry.quantity > 1 ? entry.quantity + "x " + entry.name : entry.name;
+            // Draw text with step number
+            String text = stepNumber + ". " + entry.name;
+            if (entry.quantity > 1) {
+                text = stepNumber + ". " + entry.quantity + "x " + entry.name;
+            }
             context.drawText(this.textRenderer, Text.literal(text), contentX + PADDING + 20, materialY, 0xFFFFFFFF, true);
             materialY += 18;
+            stepNumber++;
         }
 
         // Draw close button
@@ -135,35 +143,31 @@ public class BannerMaterialsScreen extends Screen {
 
     private List<MaterialEntry> getMaterialsList() {
         List<MaterialEntry> materials = new ArrayList<>();
-        Map<DyeColor, Integer> dyeCounts = new HashMap<>();
 
-        // Count dyes needed
+        // Add each layer in order with its pattern and dye
         for (BannerPatternLayer layer : banner.getLayers()) {
-            DyeColor color = layer.getDyeColorEnum();
-            dyeCounts.put(color, dyeCounts.getOrDefault(color, 0) + 1);
-        }
-
-        // Add dyes to materials list
-        for (Map.Entry<DyeColor, Integer> entry : dyeCounts.entrySet()) {
-            DyeColor color = entry.getKey();
-            int quantity = entry.getValue();
-            ItemStack dyeStack = new ItemStack(SavedBanner.getDyeItem(color));
-            String colorName = color.asString();
-            String displayName = colorName.substring(0, 1).toUpperCase() + colorName.substring(1) + " Dye";
-            materials.add(new MaterialEntry(dyeStack, displayName, quantity));
-        }
-
-        // Add patterns that require items (not built-in patterns)
-        if (!banner.getLayers().isEmpty()) {
-            for (BannerPatternLayer layer : banner.getLayers()) {
-                String patternId = layer.patternId();
-                ItemStack patternStack = getPatternItem(patternId);
-                
-                // Only add if it's not a built-in pattern (has a corresponding item)
-                if (patternStack != null && !patternStack.isEmpty()) {
-                    String patternName = extractPatternName(patternId);
-                    materials.add(new MaterialEntry(patternStack, patternName, 1));
-                }
+            String patternId = layer.patternId();
+            DyeColor dyeColor = layer.getDyeColorEnum();
+            
+            // Get pattern name
+            String patternName = extractPatternName(patternId);
+            
+            // Get dye color name
+            String colorName = dyeColor.asString();
+            String displayColor = colorName.substring(0, 1).toUpperCase() + colorName.substring(1);
+            
+            // Create display text: "Pattern Name (Dye Color)"
+            String displayName = patternName + " (" + displayColor + " Dye)";
+            
+            // Check if this pattern requires an item
+            ItemStack patternStack = getPatternItem(patternId);
+            if (patternStack != null && !patternStack.isEmpty()) {
+                // Pattern requires an item
+                materials.add(new MaterialEntry(patternStack, displayName, 1));
+            } else {
+                // Built-in pattern - show dye instead
+                ItemStack dyeStack = new ItemStack(SavedBanner.getDyeItem(dyeColor));
+                materials.add(new MaterialEntry(dyeStack, displayName, 1));
             }
         }
 
