@@ -3,7 +3,8 @@
 	"package": "dogwhale65.loombook.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"ExampleClientMixin"
+		"LoomScreenAccessor",
+		"LoomScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

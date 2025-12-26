@@ -3,9 +3,9 @@
 	"id": "loombook",
 	"version": "${version}",
 	"name": "loombook",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Mod that adds a side panel to the loom screen to save and load patterns",
 	"authors": [
-		"Me!"
+		"dogwhale65"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
