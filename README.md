@@ -25,6 +25,7 @@ Share your banner designs with friends or back them up.
 
 - Export one or multiple banners as JSON
 - Import banners from JSON (single or bulk)
+- Import banners from PlanetMinecraft banner commands
 - Copy to clipboard for easy sharing
 - Automatically handles duplicate names
 
@@ -53,6 +54,16 @@ Right-click any banner to see exactly what materials you need to craft it.
 6. Select and click "Craft" to make it again
 
 That's it. Pretty straightforward.
+
+### Importing from PlanetMinecraft
+
+You can easily import banners from [PlanetMinecraft](https://www.planetminecraft.com/).
+
+1. Go to [PlanetMinecraft's banner page](https://www.planetminecraft.com/banners/)
+2. Find a banner you like and copy the `/give` command
+3. Open the Import screen in Loombook
+4. Paste the command and press OK
+5. The banner design is imported and ready to craft!
 
 ## Requirements
 

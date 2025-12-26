@@ -305,10 +305,21 @@ public class AutoCraftStateMachine {
     private void quickMoveToSlot(int fromSlot, int toSlot) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.interactionManager != null && client.player != null) {
-            // Pick up from source
+            ItemStack sourceStack = handler.getSlot(fromSlot).getStack();
+            if (sourceStack.isEmpty()) return;
+            
+            // 1. Pick up the entire stack from source (Left Click)
             client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
-            // Place in destination
-            client.interactionManager.clickSlot(handler.syncId, toSlot, 0, SlotActionType.PICKUP, client.player);
+            
+            // 2. Place ONE item into destination (Right Click)
+            // Button 1 is Right Click, which places one item from the cursor stack
+            client.interactionManager.clickSlot(handler.syncId, toSlot, 1, SlotActionType.PICKUP, client.player);
+            
+            // 3. Put remaining items back into source (Left Click)
+            // We do this unconditionally to ensure we don't hold onto items.
+            // If we had >1 items, we are holding the rest. Clicking source puts them back.
+            // If we had 1 item, we placed it. Cursor is empty. Source is empty. Clicking source does nothing.
+            client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
         }
     }
 
@@ -321,14 +332,15 @@ public class AutoCraftStateMachine {
 
     private Item getRequiredPatternItem(String patternId) {
         // These patterns require a banner pattern item
-        if (patternId.contains("globe")) return Items.GLOBE_BANNER_PATTERN;
-        if (patternId.contains("creeper")) return Items.CREEPER_BANNER_PATTERN;
-        if (patternId.contains("skull")) return Items.SKULL_BANNER_PATTERN;
-        if (patternId.contains("flower")) return Items.FLOWER_BANNER_PATTERN;
-        if (patternId.contains("mojang")) return Items.MOJANG_BANNER_PATTERN;
-        if (patternId.contains("piglin")) return Items.PIGLIN_BANNER_PATTERN;
-        if (patternId.contains("flow")) return Items.FLOW_BANNER_PATTERN;
-        if (patternId.contains("guster")) return Items.GUSTER_BANNER_PATTERN;
+        String lowerId = patternId.toLowerCase();
+        if (lowerId.contains("globe")) return Items.GLOBE_BANNER_PATTERN;
+        if (lowerId.contains("creeper")) return Items.CREEPER_BANNER_PATTERN;
+        if (lowerId.contains("skull")) return Items.SKULL_BANNER_PATTERN;
+        if (lowerId.contains("flower")) return Items.FLOWER_BANNER_PATTERN;
+        if (lowerId.contains("mojang")) return Items.MOJANG_BANNER_PATTERN;
+        if (lowerId.contains("piglin")) return Items.PIGLIN_BANNER_PATTERN;
+        if (lowerId.contains("flow")) return Items.FLOW_BANNER_PATTERN;
+        if (lowerId.contains("guster")) return Items.GUSTER_BANNER_PATTERN;
         return null;
     }
 

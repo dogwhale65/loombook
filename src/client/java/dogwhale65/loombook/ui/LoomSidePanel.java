@@ -41,6 +41,7 @@ public class LoomSidePanel {
     private String selectedBannerId = null;
     private Set<String> selectedBannerIds = new HashSet<>();
     private int lastClickedIndex = -1;
+    private java.util.Queue<String> craftQueue = new java.util.LinkedList<>();
 
     public LoomSidePanel(LoomScreen screen, LoomScreenHandler handler, int x, int y) {
         this.screen = screen;
@@ -224,8 +225,11 @@ public class LoomSidePanel {
 
         // Check craft button
         if (!selectedBannerIds.isEmpty() && isInCraftButton(mx, my)) {
-            for (String bannerId : selectedBannerIds) {
-                SavedBanner selected = BannerStorage.getInstance().getBannerById(bannerId);
+            craftQueue.clear();
+            craftQueue.addAll(selectedBannerIds);
+            if (!craftQueue.isEmpty()) {
+                String nextBannerId = craftQueue.poll();
+                SavedBanner selected = BannerStorage.getInstance().getBannerById(nextBannerId);
                 if (selected != null) {
                     autoCraft.start(selected);
                 }
@@ -311,6 +315,14 @@ public class LoomSidePanel {
 
     public void tick() {
         autoCraft.tick();
+        
+        if (autoCraft.getState() == AutoCraftStateMachine.AutoCraftState.COMPLETE && !craftQueue.isEmpty()) {
+            String nextBannerId = craftQueue.poll();
+            SavedBanner selected = BannerStorage.getInstance().getBannerById(nextBannerId);
+            if (selected != null) {
+                autoCraft.start(selected);
+            }
+        }
     }
 
     private void saveBannerFromOutput() {
