@@ -1,166 +1,74 @@
 # Loombook
 
-A Minecraft Fabric mod that enhances the loom experience by providing a convenient side panel for saving, managing, and crafting banner patterns.
+A Minecraft mod that makes working with banners way easier. Save your favorite banner designs, manage them all in one place, and craft them whenever you want.
 
-## Features
+## What It Does
 
-### Banner Management
-- **Save Banners**: Save banner designs from the loom for later use
-  - Automatically saves from the input slot if no dyes or patterns are applied
-  - Saves from the output slot if patterns have been applied
-- **Rename Banners**: Edit the names of your saved banner designs
-- **Delete Banners**: Remove banners you no longer need
-- **View Saved Banners**: Browse all your saved banner designs in a convenient side panel
+### Save and Manage Banners
+Keep all your banner designs in one convenient side panel. No more trying to remember how you made that cool pattern. Just save it and come back to it anytime.
 
-### Multi-Select Functionality
-- **Single Click**: Select a single banner
-- **Ctrl+Click**: Toggle individual banner selection for multi-select
-- **Shift+Click**: Select a range of banners between the last clicked and current banner
-- **Visual Feedback**: Selected banners are highlighted in blue with a border
+- Save banners directly from the loom
+- Rename your saved designs
+- Delete ones you don't need anymore
+- See all your banners at a glance
 
-### Import/Export
-- **Export Single Banner**: Export a single banner as JSON to clipboard
-- **Export Multiple Banners**: Export multiple selected banners as a JSON array
-- **Import Banners**: Import banner designs from JSON format
-  - Supports both single banner JSON objects and JSON arrays
-  - Automatically handles ID conflicts by generating new IDs
+### Multi-Select
+Want to work with multiple banners at once? No problem.
 
-### Crafting
-- **Single Craft**: Click the Craft button to craft a selected banner
-- **Multi-Craft**: Select multiple banners and craft them sequentially
-- **Auto-Craft**: The mod automatically handles the crafting process
+- Click to select a single banner
+- Ctrl+Click to add more banners to your selection
+- Shift+Click to select a whole range
+- See which ones are selected with the blue highlight
 
-### Materials Display
-- **Right-Click Materials**: Right-click any saved banner to view required materials
-- **Item Icons**: See actual item icons for all required materials
-- **Dye Quantities**: View how many of each dye color is needed
-- **Pattern Items**: See which banner pattern items are required
-- **Scrollable List**: Scroll through the materials list if there are many items
+### Import and Export
+Share your banner designs with friends or back them up.
 
-## Installation
+- Export one or multiple banners as JSON
+- Import banners from JSON (single or bulk)
+- Copy to clipboard for easy sharing
+- Automatically handles duplicate names
 
-1. Download the latest release of Loombook
-2. Place the JAR file in your Minecraft `mods` folder
-3. Ensure you have Fabric Loader and Fabric API installed
-4. Launch Minecraft with the Fabric profile
+### Auto-Craft
+Let the mod do the crafting for you.
 
-## Usage
+- Select a banner and hit Craft
+- Select multiple banners and craft them all in sequence
+- The mod handles all the clicking and item management
 
-### Accessing the Loom Panel
-When you open a loom, a side panel will appear on the right side showing your saved banners.
+### See What You Need
+Right-click any banner to see exactly what materials you need to craft it.
 
-### Saving Banners
-1. Create a banner design in the loom
-2. Click the "+ Save" button in the side panel
-3. The banner will be saved with an auto-generated name or your custom name
+- Shows the base banner color
+- Lists all the dyes you need (with quantities)
+- Shows which banner pattern items are required
+- Easy to see at a glance what to grab from your storage
 
-### Managing Banners
-- **Rename**: Click the "E" button next to a banner to rename it
-- **Delete**: Click the "X" button next to a banner to delete it
-- **Select**: Click a banner to select it (for crafting or exporting)
+## How to Use
 
-### Multi-Select Operations
-1. Click a banner to select it
-2. Hold Ctrl and click other banners to add them to the selection
-3. Hold Shift and click to select a range of banners
-4. Use the Craft or Export buttons to perform actions on all selected banners
+1. Open a loom and you'll see the Loombook panel on the right
+2. Create a banner design
+3. Click "+ Save" to save it
+4. Your banner appears in the list
+5. Right-click to see materials needed
+6. Select and click "Craft" to make it again
 
-### Exporting Banners
-1. Select one or more banners
-2. Click the "Export" button
-3. The banner(s) will be copied to your clipboard as JSON
-4. Share the JSON with others or save it for later
+That's it. Pretty straightforward.
 
-### Importing Banners
-1. Click the "Import" button
-2. Paste the banner JSON into the text editor
-3. Click "OK" to import the banner(s)
+## Requirements
 
-### Viewing Materials
-1. Right-click any saved banner in the panel
-2. A materials screen will open showing:
-   - The base banner color
-   - All dyes needed with quantities
-   - All banner pattern items required
-3. Click "Close" to return to the loom
-
-### Crafting Banners
-1. Select one or more banners from the panel
-2. Click the "Craft" button at the bottom
-3. The mod will automatically craft the banner(s) using the loom
-
-## Configuration
-
-Banners are automatically saved to:
-```
-.minecraft/config/loombook/banners/
-```
-
-Each banner is stored as a separate JSON file with a unique ID.
-
-## Technical Details
-
-### Architecture
-- **LoomSidePanel**: Main UI component for the side panel
-- **BannerStorage**: Handles saving and loading banner data
-- **BannerPreviewRenderer**: Renders banner previews with patterns
-- **BannerMaterialsScreen**: Displays required materials for a banner
-- **ImportBannerScreen**: Provides UI for importing banners
-- **AutoCraftStateMachine**: Manages the automatic crafting process
-
-### Data Format
-Banners are stored in JSON format with the following structure:
-```json
-{
-  "id": "unique-uuid",
-  "name": "Banner Name",
-  "baseColor": "white",
-  "layers": [
-    {
-      "patternId": "minecraft:globe",
-      "color": "red"
-    }
-  ],
-  "createdAt": 1234567890
-}
-```
-
-## Compatibility
-
-- Minecraft 1.20+
-- Fabric Loader 0.14+
+- Minecraft 1.21.6-1.21.8
+- Fabric Loader
 - Fabric API
 
-## Known Limitations
+## Features at a Glance
 
-- The mod only works with Fabric (not Forge)
-- Banner patterns are limited to those available in your Minecraft version
-- Multi-crafting requires the loom to be accessible for each banner
+- Save unlimited banner designs
+- Rename and organize your banners
+- Multi-select for batch operations
+- Import/export for sharing
+- Auto-crafting to save time
+- Material list viewer
+- Clean, intuitive UI
+- Persistent storage
 
-## Troubleshooting
-
-### Banners not saving
-- Ensure the loom has a banner in the input slot
-- Check that the `config/loombook/banners/` directory exists and is writable
-
-### Import not working
-- Verify the JSON format is correct
-- Ensure you're using valid banner pattern IDs
-- Check the game log for error messages
-
-### Crafting fails
-- Ensure you have enough dyes and pattern items in your inventory
-- Check that the loom is still accessible
-- Verify the banner design is valid
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Credits
-
-Developed for the Minecraft community to enhance the loom crafting experience.
+Enjoy making banners!

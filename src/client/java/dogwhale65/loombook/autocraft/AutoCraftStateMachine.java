@@ -250,6 +250,8 @@ public class AutoCraftStateMachine {
                 // More layers to go - take output and put in banner slot
                 // First pick up the output
                 client.interactionManager.clickSlot(handler.syncId, OUTPUT_SLOT, 0, SlotActionType.PICKUP, client.player);
+                // Return pattern items to inventory before next layer
+                returnPatternItemsToInventory();
                 // Then place in banner slot (clear banner slot first if needed)
                 ItemStack bannerSlotStack = handler.getSlot(BANNER_SLOT).getStack();
                 if (!bannerSlotStack.isEmpty()) {
