@@ -76,20 +76,26 @@ public class ImportBannerScreen extends Screen {
 
         // Draw buttons
         int buttonY = editorY + EDITOR_HEIGHT + PADDING;
+        int buttonWidth = 50;
+        int buttonSpacing = 10;
         
         // OK button
-        int okButtonX = (this.width / 2) - 60;
-        boolean okHovered = mouseX >= okButtonX && mouseX < okButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20;
-        int okColor = okHovered ? 0xFF4CAF50 : 0xFF2E7D32;
-        context.fill(okButtonX, buttonY, okButtonX + 50, buttonY + 20, okColor);
-        context.drawText(this.textRenderer, Text.literal("OK"), okButtonX + 15, buttonY + 6, 0xFFFFFFFF, true);
+        int okButtonX = (this.width / 2) - buttonWidth - (buttonSpacing / 2);
+        boolean okHovered = mouseX >= okButtonX && mouseX < okButtonX + buttonWidth && mouseY >= buttonY && mouseY < buttonY + 20;
+        int okColor = okHovered ? 0xFF66BB6A : 0xFF2E7D32;
+        context.fill(okButtonX, buttonY, okButtonX + buttonWidth, buttonY + 20, okColor);
+        String okText = "OK";
+        int okTextWidth = this.textRenderer.getWidth(okText);
+        context.drawText(this.textRenderer, Text.literal(okText), okButtonX + (buttonWidth - okTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
         // Cancel button
-        int cancelButtonX = (this.width / 2) + 10;
-        boolean cancelHovered = mouseX >= cancelButtonX && mouseX < cancelButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20;
-        int cancelColor = cancelHovered ? 0xFFFF5555 : 0xFFCC0000;
-        context.fill(cancelButtonX, buttonY, cancelButtonX + 50, buttonY + 20, cancelColor);
-        context.drawText(this.textRenderer, Text.literal("Cancel"), cancelButtonX + 5, buttonY + 6, 0xFFFFFFFF, true);
+        int cancelButtonX = (this.width / 2) + (buttonSpacing / 2);
+        boolean cancelHovered = mouseX >= cancelButtonX && mouseX < cancelButtonX + buttonWidth && mouseY >= buttonY && mouseY < buttonY + 20;
+        int cancelColor = cancelHovered ? 0xFFFF6B6B : 0xFFCC0000;
+        context.fill(cancelButtonX, buttonY, cancelButtonX + buttonWidth, buttonY + 20, cancelColor);
+        String cancelText = "Cancel";
+        int cancelTextWidth = this.textRenderer.getWidth(cancelText);
+        context.drawText(this.textRenderer, Text.literal(cancelText), cancelButtonX + (buttonWidth - cancelTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
         super.render(context, mouseX, mouseY, delta);
     }
@@ -101,17 +107,19 @@ public class ImportBannerScreen extends Screen {
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
         int buttonY = editorY + EDITOR_HEIGHT + PADDING;
+        int buttonWidth = 50;
+        int buttonSpacing = 10;
 
         // OK button
-        int okButtonX = (this.width / 2) - 60;
-        if (mouseX >= okButtonX && mouseX < okButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20) {
+        int okButtonX = (this.width / 2) - buttonWidth - (buttonSpacing / 2);
+        if (mouseX >= okButtonX && mouseX < okButtonX + buttonWidth && mouseY >= buttonY && mouseY < buttonY + 20) {
             importBanner();
             return true;
         }
 
         // Cancel button
-        int cancelButtonX = (this.width / 2) + 10;
-        if (mouseX >= cancelButtonX && mouseX < cancelButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20) {
+        int cancelButtonX = (this.width / 2) + (buttonSpacing / 2);
+        if (mouseX >= cancelButtonX && mouseX < cancelButtonX + buttonWidth && mouseY >= buttonY && mouseY < buttonY + 20) {
             this.client.setScreen(previousScreen);
             return true;
         }

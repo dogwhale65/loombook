@@ -145,6 +145,7 @@ public class BannerStorage {
     /**
      * Imports a banner from JSON string format or /give command format
      * Auto-detects the format and parses accordingly
+     * Can handle single banner JSON or JSON array of banners
      */
     public SavedBanner importBannerFromJson(String input) {
         if (input == null || input.trim().isEmpty()) {
@@ -158,7 +159,39 @@ public class BannerStorage {
             return importBannerFromGiveCommand(input);
         }
 
-        // Otherwise, try to parse as JSON
+        // Try to parse as JSON array first
+        if (input.startsWith("[")) {
+            try {
+                JsonArray jsonArray = GSON.fromJson(input, JsonArray.class);
+                SavedBanner lastBanner = null;
+                for (JsonElement element : jsonArray) {
+                    if (element.isJsonObject()) {
+                        try {
+                            SavedBanner banner = GSON.fromJson(element, SavedBanner.class);
+                            if (banner != null) {
+                                // Check if banner with this ID already exists
+                                if (getBannerById(banner.getId()) != null) {
+                                    // Generate new ID to avoid conflicts
+                                    banner.setId(java.util.UUID.randomUUID().toString());
+                                }
+                                addBanner(banner);
+                                lastBanner = banner;
+                            }
+                        } catch (Exception e) {
+                            Loombook.LOGGER.warn("Failed to import individual banner from array", e);
+                        }
+                    }
+                }
+                if (lastBanner != null) {
+                    Loombook.LOGGER.info("Successfully imported {} banners from JSON array", jsonArray.size());
+                    return lastBanner;
+                }
+            } catch (Exception e) {
+                Loombook.LOGGER.debug("Input is not a valid JSON array, trying single banner format", e);
+            }
+        }
+
+        // Otherwise, try to parse as single banner JSON
         try {
             SavedBanner banner = GSON.fromJson(input, SavedBanner.class);
             if (banner != null) {
