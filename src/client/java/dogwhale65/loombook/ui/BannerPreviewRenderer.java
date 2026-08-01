@@ -3,35 +3,33 @@ package dogwhale65.loombook.ui;
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerPatternLayer;
 import dogwhale65.loombook.data.SavedBanner;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.screen.LoomScreenHandler;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.inventory.LoomMenu;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 /**
  * Renders banner preview thumbnails in the side panel.
  */
 public class BannerPreviewRenderer {
 
-    public static void render(DrawContext context, SavedBanner banner, LoomScreenHandler handler, int x, int y, int size) {
+    public static void render(GuiGraphicsExtractor context, SavedBanner banner, LoomMenu handler, int x, int y, int size) {
         // Create a banner item stack with patterns applied
         ItemStack bannerStack = createBannerWithPatterns(banner);
 
         // Render the item using DrawContext
-        context.drawItem(bannerStack, x, y);
+        context.item(bannerStack, x, y);
     }
 
     /**
@@ -43,7 +41,7 @@ public class BannerPreviewRenderer {
         List<BannerPatternLayer> layers = banner.getLayers();
         if (!layers.isEmpty()) {
             try {
-                BannerPatternsComponent.Builder builder = new BannerPatternsComponent.Builder();
+                BannerPatternLayers.Builder builder = new BannerPatternLayers.Builder();
                 
                 Registry<Object> registry = getBannerPatternRegistry();
                 
@@ -54,13 +52,13 @@ public class BannerPreviewRenderer {
                             Identifier patternId = Identifier.tryParse(patternIdStr);
                             
                             if (patternId != null) {
-                                Optional<RegistryEntry.Reference<Object>> entry = registry.getEntry(patternId);
+                                Optional<Holder.Reference<Object>> entry = registry.get(patternId);
                                 
                                 if (entry.isPresent()) {
                                     // We need to cast to the specific type expected by the builder
                                     @SuppressWarnings("unchecked")
-                                    RegistryEntry<Object> castedEntry = entry.get();
-                                    builder.add((RegistryEntry) castedEntry, layer.getDyeColorEnum());
+                                    Holder<Object> castedEntry = entry.get();
+                                    builder.add((Holder) castedEntry, layer.getDyeColorEnum());
                                 } else {
                                     Loombook.LOGGER.debug("Pattern not found in registry: {}", patternId);
                                 }
@@ -71,7 +69,7 @@ public class BannerPreviewRenderer {
                     }
                 }
                 
-                stack.set(DataComponentTypes.BANNER_PATTERNS, builder.build());
+                stack.set(DataComponents.BANNER_PATTERNS, builder.build());
             } catch (Exception e) {
                 Loombook.LOGGER.debug("Error creating banner patterns component", e);
             }
@@ -82,11 +80,11 @@ public class BannerPreviewRenderer {
 
     @SuppressWarnings("unchecked")
     private static Registry<Object> getBannerPatternRegistry() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.world != null) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level != null) {
             try {
                 // Try getOptional first
-                return (Registry<Object>) (Object) client.world.getRegistryManager().getOptional(RegistryKeys.BANNER_PATTERN).orElse(null);
+                return (Registry<Object>) (Object) client.level.registryAccess().lookup(Registries.BANNER_PATTERN).orElse(null);
             } catch (Exception e) {
                 Loombook.LOGGER.debug("Failed to get registry from world", e);
             }
@@ -101,11 +99,11 @@ public class BannerPreviewRenderer {
         if (baseColor == null) return null;
 
         List<BannerPatternLayer> layers = new ArrayList<>();
-        BannerPatternsComponent patterns = stack.get(DataComponentTypes.BANNER_PATTERNS);
+        BannerPatternLayers patterns = stack.get(DataComponents.BANNER_PATTERNS);
 
         if (patterns != null) {
             for (var layer : patterns.layers()) {
-                String patternId = layer.pattern().getIdAsString();
+                String patternId = layer.pattern().getRegisteredName();
                 DyeColor dyeColor = layer.color();
                 layers.add(BannerPatternLayer.of(patternId, dyeColor));
             }

@@ -1,12 +1,13 @@
 package dogwhale65.loombook.mixin.client;
 
 import dogwhale65.loombook.ui.LoomSidePanel;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.screen.ingame.LoomScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.LoomScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.LoomScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.LoomMenu;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,25 +16,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LoomScreen.class)
-public abstract class LoomScreenMixin extends HandledScreen<LoomScreenHandler> {
+public abstract class LoomScreenMixin extends AbstractContainerScreen<LoomMenu> {
 
     @Unique
     private LoomSidePanel loombook$sidePanel;
 
-    public LoomScreenMixin(LoomScreenHandler handler, PlayerInventory inventory, Text title) {
+    public LoomScreenMixin(LoomMenu handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
     }
 
     @Inject(method = "init", at = @At("TAIL"))
     private void loombook$onInit(CallbackInfo ci) {
         // Position the panel to the right of the loom UI
-        int panelX = this.x + this.backgroundWidth + 4;
-        int panelY = this.y;
-        loombook$sidePanel = new LoomSidePanel((LoomScreen)(Object)this, this.handler, panelX, panelY);
+        int panelX = this.leftPos + this.imageWidth + 4;
+        int panelY = this.topPos;
+        loombook$sidePanel = new LoomSidePanel((LoomScreen)(Object)this, this.menu, panelX, panelY);
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void loombook$onRender(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "extractBackground", at = @At("TAIL"))
+    private void loombook$onExtractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (loombook$sidePanel != null) {
             // Tick the auto-craft state machine during render for smooth updates
             loombook$sidePanel.tick();
@@ -42,8 +43,8 @@ public abstract class LoomScreenMixin extends HandledScreen<LoomScreenHandler> {
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void loombook$onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (loombook$sidePanel != null && loombook$sidePanel.mouseClicked(mouseX, mouseY, button)) {
+    private void loombook$onMouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl, CallbackInfoReturnable<Boolean> cir) {
+        if (loombook$sidePanel != null && loombook$sidePanel.mouseClicked(mouseButtonEvent)) {
             cir.setReturnValue(true);
         }
     }

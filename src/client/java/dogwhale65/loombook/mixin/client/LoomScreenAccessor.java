@@ -1,34 +1,34 @@
 package dogwhale65.loombook.mixin.client;
 
-import net.minecraft.client.gui.screen.ingame.LoomScreen;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.screens.inventory.LoomScreen;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(LoomScreen.class)
 public interface LoomScreenAccessor {
-    @Accessor("banner")
+    @Accessor("bannerStack")
     ItemStack getBanner();
 
-    @Accessor("dye")
+    @Accessor("dyeStack")
     ItemStack getDye();
 
-    @Accessor("pattern")
+    @Accessor("patternStack")
     ItemStack getPattern();
 
-    @Accessor("canApplyDyePattern")
+    @Accessor("displayPatterns")
     boolean getCanApplyDyePattern();
 
-    @Accessor("hasTooManyPatterns")
+    @Accessor("hasMaxPatterns")
     boolean getHasTooManyPatterns();
 
-    @Accessor("scrollPosition")
+    @Accessor("scrollOffs")
     float getScrollPosition();
 
-    @Accessor("scrollPosition")
+    @Accessor("scrollOffs")
     void setScrollPosition(float position);
 
-    @Accessor("bannerPatterns")
-    BannerPatternsComponent getBannerPatterns();
+    @Accessor("resultBannerPatterns")
+    BannerPatternLayers getBannerPatterns();
 }

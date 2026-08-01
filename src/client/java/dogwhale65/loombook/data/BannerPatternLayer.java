@@ -1,6 +1,6 @@
 package dogwhale65.loombook.data;
 
-import net.minecraft.util.DyeColor;
+import net.minecraft.world.item.DyeColor;
 
 /**
  * Represents a single pattern layer on a banner.
@@ -11,10 +11,10 @@ public record BannerPatternLayer(
     String dyeColor
 ) {
     public DyeColor getDyeColorEnum() {
-        return DyeColor.byId(dyeColor, DyeColor.WHITE);
+        return DyeColor.byName(dyeColor, DyeColor.WHITE);
     }
 
     public static BannerPatternLayer of(String patternId, DyeColor color) {
-        return new BannerPatternLayer(patternId, color.getId());
+        return new BannerPatternLayer(patternId, color.getName());
     }
 }
