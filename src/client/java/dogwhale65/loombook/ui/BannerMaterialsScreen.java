@@ -8,13 +8,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 
@@ -37,7 +37,7 @@ public class BannerMaterialsScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         // Draw semi-transparent background
         context.fill(0, 0, this.width, this.height, 0xAA000000);
 
@@ -53,16 +53,16 @@ public class BannerMaterialsScreen extends Screen {
         context.fill(contentX, contentY + CONTENT_HEIGHT - 1, contentX + CONTENT_WIDTH, contentY + CONTENT_HEIGHT, 0xFF4169E1); // Bottom
 
         // Draw title
-        context.drawString(this.font, Component.literal("Required Materials"), contentX + PADDING, contentY + PADDING, 0xFF4169E1, true);
+        context.text(this.font, Component.literal("Required Materials"), contentX + PADDING, contentY + PADDING, 0xFF4169E1, true);
 
         // Draw crafting order header
-        context.drawString(this.font, Component.literal("Crafting Order:"), contentX + PADDING, contentY + PADDING + 15, 0xFF4169E1, true);
+        context.text(this.font, Component.literal("Crafting Order:"), contentX + PADDING, contentY + PADDING + 15, 0xFF4169E1, true);
 
         // Draw banner base color
         String baseColorName = banner.getBaseColorEnum().getSerializedName();
         ItemStack baseStack = new ItemStack(banner.getBaseBannerItem());
-        context.renderItem(baseStack, contentX + PADDING, contentY + PADDING + 28);
-        context.drawString(this.font, Component.literal("1. " + baseColorName + " Banner"), contentX + PADDING + 20, contentY + PADDING + 31, 0xFFFFFFFF, true);
+        context.item(baseStack, contentX + PADDING, contentY + PADDING + 28);
+        context.text(this.font, Component.literal("1. " + baseColorName + " Banner"), contentX + PADDING + 20, contentY + PADDING + 31, 0xFFFFFFFF, true);
 
         // Draw materials list with step numbers
         int materialY = contentY + PADDING + 50;
@@ -75,14 +75,14 @@ public class BannerMaterialsScreen extends Screen {
             MaterialEntry entry = materials.get(i);
             
             // Draw item
-            context.renderItem(entry.stack, contentX + PADDING, materialY - 2);
+            context.item(entry.stack, contentX + PADDING, materialY - 2);
             
             // Draw text with step number
             String text = stepNumber + ". " + entry.name;
             if (entry.quantity > 1) {
                 text = stepNumber + ". " + entry.quantity + "x " + entry.name;
             }
-            context.drawString(this.font, Component.literal(text), contentX + PADDING + 20, materialY, 0xFFFFFFFF, true);
+            context.text(this.font, Component.literal(text), contentX + PADDING + 20, materialY, 0xFFFFFFFF, true);
             materialY += 18;
             stepNumber++;
         }
@@ -95,9 +95,9 @@ public class BannerMaterialsScreen extends Screen {
         context.fill(buttonX, buttonY, buttonX + 50, buttonY + 20, buttonColor);
         String closeText = "Close";
         int closeTextWidth = this.font.width(closeText);
-        context.drawString(this.font, Component.literal(closeText), buttonX + (50 - closeTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
+        context.text(this.font, Component.literal(closeText), buttonX + (50 - closeTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -204,8 +204,8 @@ public class BannerMaterialsScreen extends Screen {
                     String[] parts = patternId.split(":");
                     String patternName = parts.length > 1 ? parts[1] : patternId;
                     String itemId = parts[0] + ":" + patternName + "_banner_pattern";
-                    
-                    ResourceLocation itemIdentifier = ResourceLocation.tryParse(itemId);
+
+                    Identifier itemIdentifier = Identifier.tryParse(itemId);
                     if (itemIdentifier != null && registry.containsKey(itemIdentifier)) {
                         net.minecraft.world.item.Item item = registry.getValue(itemIdentifier);
                         if (item != null) {

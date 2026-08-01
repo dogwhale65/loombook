@@ -2,7 +2,7 @@ package dogwhale65.loombook.ui;
 
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerStorage;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -33,7 +33,7 @@ public class RenameBannerScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         // Draw semi-transparent background
         context.fill(0, 0, this.width, this.height, 0xAA000000);
 
@@ -41,17 +41,17 @@ public class RenameBannerScreen extends Screen {
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
         context.fill(editorX, editorY, editorX + EDITOR_WIDTH, editorY + EDITOR_HEIGHT, 0xFF1F1F1F);
-        context.submitOutline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
+        context.outline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
 
         // Draw title
-        context.drawString(this.font, Component.literal("Enter new name:"),
+        context.text(this.font, Component.literal("Enter new name:"),
             editorX + PADDING, editorY - 20, 0xFFFFFFFF, true);
 
         // Draw text content
         int textStartX = editorX + PADDING;
         int textStartY = editorY + PADDING;
         String text = textBuffer.toString();
-        context.drawString(this.font, Component.literal(text), textStartX, textStartY, 0xFFFFFFFF, true);
+        context.text(this.font, Component.literal(text), textStartX, textStartY, 0xFFFFFFFF, true);
 
         // Draw cursor
         if (cursorPos >= 0 && cursorPos <= text.length()) {
@@ -68,16 +68,16 @@ public class RenameBannerScreen extends Screen {
         boolean okHovered = mouseX >= okButtonX && mouseX < okButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20;
         int okColor = okHovered ? 0xFF4CAF50 : 0xFF2E7D32;
         context.fill(okButtonX, buttonY, okButtonX + 50, buttonY + 20, okColor);
-        context.drawString(this.font, Component.literal("OK"), okButtonX + 15, buttonY + 6, 0xFFFFFFFF, true);
+        context.text(this.font, Component.literal("OK"), okButtonX + 15, buttonY + 6, 0xFFFFFFFF, true);
 
         // Cancel button
         int cancelButtonX = (this.width / 2) + 10;
         boolean cancelHovered = mouseX >= cancelButtonX && mouseX < cancelButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20;
         int cancelColor = cancelHovered ? 0xFFFF5555 : 0xFFCC0000;
         context.fill(cancelButtonX, buttonY, cancelButtonX + 50, buttonY + 20, cancelColor);
-        context.drawString(this.font, Component.literal("Cancel"), cancelButtonX + 5, buttonY + 6, 0xFFFFFFFF, true);
+        context.text(this.font, Component.literal("Cancel"), cancelButtonX + 5, buttonY + 6, 0xFFFFFFFF, true);
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
     @Override

@@ -2,7 +2,7 @@ package dogwhale65.loombook.ui;
 
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerStorage;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -28,7 +28,7 @@ public class ImportBannerScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         // Draw semi-transparent background
         context.fill(0, 0, this.width, this.height, 0xAA000000);
 
@@ -36,10 +36,10 @@ public class ImportBannerScreen extends Screen {
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
         context.fill(editorX, editorY, editorX + EDITOR_WIDTH, editorY + EDITOR_HEIGHT, 0xFF1F1F1F);
-        context.submitOutline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
+        context.outline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
 
         // Draw title
-        context.drawString(this.font, Component.literal("Paste Banner JSON or /give Command"),
+        context.text(this.font, Component.literal("Paste Banner JSON or /give Command"),
             this.width / 2 - 120, editorY - 20, 0xFFFFFFFF, true);
 
         // Draw text content with scrolling
@@ -58,7 +58,7 @@ public class ImportBannerScreen extends Screen {
         for (int i = 0; i < lines.length; i++) {
             if (lineY > textStartY + textHeight) break;
             if (lineY + 10 > textStartY) {
-                context.drawString(this.font, Component.literal(lines[i]), textStartX, lineY, 0xFFFFFFFF, true);
+                context.text(this.font, Component.literal(lines[i]), textStartX, lineY, 0xFFFFFFFF, true);
             }
             lineY += 10;
         }
@@ -89,7 +89,7 @@ public class ImportBannerScreen extends Screen {
         context.fill(okButtonX, buttonY, okButtonX + buttonWidth, buttonY + 20, okColor);
         String okText = "OK";
         int okTextWidth = this.font.width(okText);
-        context.drawString(this.font, Component.literal(okText), okButtonX + (buttonWidth - okTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
+        context.text(this.font, Component.literal(okText), okButtonX + (buttonWidth - okTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
         // Cancel button
         int cancelButtonX = (this.width / 2) + (buttonSpacing / 2);
@@ -98,9 +98,9 @@ public class ImportBannerScreen extends Screen {
         context.fill(cancelButtonX, buttonY, cancelButtonX + buttonWidth, buttonY + 20, cancelColor);
         String cancelText = "Cancel";
         int cancelTextWidth = this.font.width(cancelText);
-        context.drawString(this.font, Component.literal(cancelText), cancelButtonX + (buttonWidth - cancelTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
+        context.text(this.font, Component.literal(cancelText), cancelButtonX + (buttonWidth - cancelTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
     @Override

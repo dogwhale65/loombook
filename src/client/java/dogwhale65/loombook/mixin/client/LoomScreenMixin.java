@@ -1,7 +1,7 @@
 package dogwhale65.loombook.mixin.client;
 
 import dogwhale65.loombook.ui.LoomSidePanel;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -33,8 +33,8 @@ public abstract class LoomScreenMixin extends AbstractContainerScreen<LoomMenu> 
         loombook$sidePanel = new LoomSidePanel((LoomScreen)(Object)this, this.menu, panelX, panelY);
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void loombook$onRender(GuiGraphics context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    @Inject(method = "extractBackground", at = @At("TAIL"))
+    private void loombook$onExtractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (loombook$sidePanel != null) {
             // Tick the auto-craft state machine during render for smooth updates
             loombook$sidePanel.tick();

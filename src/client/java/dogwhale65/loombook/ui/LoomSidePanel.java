@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.LoomMenu;
@@ -53,7 +53,7 @@ public class LoomSidePanel {
         Loombook.LOGGER.info("LoomSidePanel created at x={}, y={}", x, y);
     }
 
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         Minecraft client = Minecraft.getInstance();
         Font textRenderer = client.font;
 
@@ -68,7 +68,7 @@ public class LoomSidePanel {
 
         // Draw header with subtle background
         context.fill(x, y, x + PANEL_WIDTH, y + HEADER_HEIGHT + PADDING + 2, 0xFF1A1A2E);
-        context.drawString(textRenderer, Component.literal("Saved"), x + PADDING, y + PADDING, 0xFF4169E1, true);
+        context.text(textRenderer, Component.literal("Saved"), x + PADDING, y + PADDING, 0xFF4169E1, true);
 
         // Draw save button
         int saveButtonY = y + HEADER_HEIGHT + PADDING;
@@ -77,7 +77,7 @@ public class LoomSidePanel {
         context.fill(x + PADDING, saveButtonY, x + PANEL_WIDTH - PADDING, saveButtonY + SAVE_BUTTON_HEIGHT, saveButtonColor);
         String saveText = "+ Save";
         int saveTextWidth = textRenderer.width(saveText);
-        context.drawString(textRenderer, Component.literal(saveText), x + PANEL_WIDTH / 2 - saveTextWidth / 2, saveButtonY + 3, 0xFFFFFFFF, true);
+        context.text(textRenderer, Component.literal(saveText), x + PANEL_WIDTH / 2 - saveTextWidth / 2, saveButtonY + 3, 0xFFFFFFFF, true);
 
         // Draw import/export buttons
         int importButtonY = saveButtonY + SAVE_BUTTON_HEIGHT + PADDING;
@@ -89,7 +89,7 @@ public class LoomSidePanel {
         String importText = "Import";
         int importTextWidth = textRenderer.width(importText);
         int importButtonCenterX = x + PADDING + importButtonWidth / 2;
-        context.drawString(textRenderer, Component.literal(importText), importButtonCenterX - importTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
+        context.text(textRenderer, Component.literal(importText), importButtonCenterX - importTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
 
         int exportButtonX = x + PADDING + importButtonWidth + 2;
         boolean exportHovered = isInExportButton(mouseX, mouseY);
@@ -98,7 +98,7 @@ public class LoomSidePanel {
         String exportText = "Export";
         int exportTextWidth = textRenderer.width(exportText);
         int exportButtonCenterX = exportButtonX + importButtonWidth / 2;
-        context.drawString(textRenderer, Component.literal(exportText), exportButtonCenterX - exportTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
+        context.text(textRenderer, Component.literal(exportText), exportButtonCenterX - exportTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
 
         // Draw saved patterns
         List<SavedBanner> banners = BannerStorage.getInstance().getBanners();
@@ -107,7 +107,7 @@ public class LoomSidePanel {
         int maxVisible = visibleHeight / ENTRY_HEIGHT;
 
         // Draw count of saved banners in header
-        context.drawString(textRenderer, Component.literal("(" + banners.size() + ")"), x + PANEL_WIDTH - 22, y + PADDING, 0xFFAAAAAA, true);
+        context.text(textRenderer, Component.literal("(" + banners.size() + ")"), x + PANEL_WIDTH - 22, y + PADDING, 0xFFAAAAAA, true);
 
         for (int i = 0; i < maxVisible && i + scrollOffset < banners.size(); i++) {
             SavedBanner banner = banners.get(i + scrollOffset);
@@ -120,7 +120,7 @@ public class LoomSidePanel {
             
             // Draw subtle border for selected items
             if (isSelected) {
-                context.submitOutline(x + PADDING, entryY, PANEL_WIDTH - PADDING * 2, ENTRY_HEIGHT - 2, 0xFF5C7CFA);
+                context.outline(x + PADDING, entryY, PANEL_WIDTH - PADDING * 2, ENTRY_HEIGHT - 2, 0xFF5C7CFA);
             }
 
             // Draw banner preview
@@ -136,19 +136,19 @@ public class LoomSidePanel {
             if (!displayName.equals(name)) {
                 displayName = displayName.substring(0, Math.max(0, displayName.length() - 2)) + "..";
             }
-            context.drawString(textRenderer, Component.literal(displayName), x + PADDING + 22, entryY + 8, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal(displayName), x + PADDING + 22, entryY + 8, 0xFFFFFFFF, true);
 
             // Draw rename button
             int renameX = x + PANEL_WIDTH - PADDING - 28;
             boolean renameHovered = mouseX >= renameX && mouseX < renameX + 12 && mouseY >= entryY + 4 && mouseY < entryY + 18;
             int renameColor = renameHovered ? 0xFF5C7CFA : 0xFFAAAAAA;
-            context.drawString(textRenderer, Component.literal("E"), renameX + 2, entryY + 7, renameColor, true);
+            context.text(textRenderer, Component.literal("E"), renameX + 2, entryY + 7, renameColor, true);
 
             // Draw delete button
             int deleteX = x + PANEL_WIDTH - PADDING - 12;
             boolean deleteHovered = mouseX >= deleteX && mouseX < deleteX + 12 && mouseY >= entryY + 4 && mouseY < entryY + 18;
             int deleteColor = deleteHovered ? 0xFFFF6B6B : 0xFFAAAAAA;
-            context.drawString(textRenderer, Component.literal("X"), deleteX + 2, entryY + 7, deleteColor, true);
+            context.text(textRenderer, Component.literal("X"), deleteX + 2, entryY + 7, deleteColor, true);
         }
 
         // Draw craft button if any banners are selected
@@ -159,25 +159,25 @@ public class LoomSidePanel {
             context.fill(x + PADDING, craftButtonY, x + PANEL_WIDTH - PADDING, craftButtonY + BUTTON_HEIGHT, craftButtonColor);
             String craftText = selectedBannerIds.size() > 1 ? "Craft (" + selectedBannerIds.size() + ")" : "Craft";
             int craftTextWidth = textRenderer.width(craftText);
-            context.drawString(textRenderer, Component.literal(craftText), x + PANEL_WIDTH / 2 - craftTextWidth / 2, craftButtonY + 1, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal(craftText), x + PANEL_WIDTH / 2 - craftTextWidth / 2, craftButtonY + 1, 0xFFFFFFFF, true);
         }
 
         // Draw scroll indicators if needed (only if no craft button is showing)
         if (scrollOffset > 0) {
-            context.drawString(textRenderer, Component.literal("^"), x + PANEL_WIDTH / 2 - 2, listStartY - 10, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal("^"), x + PANEL_WIDTH / 2 - 2, listStartY - 10, 0xFFFFFFFF, true);
         }
         if (scrollOffset + maxVisible < banners.size() && selectedBannerIds.isEmpty()) {
-            context.drawString(textRenderer, Component.literal("v"), x + PANEL_WIDTH / 2 - 2, y + PANEL_HEIGHT - 12, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal("v"), x + PANEL_WIDTH / 2 - 2, y + PANEL_HEIGHT - 12, 0xFFFFFFFF, true);
         }
 
         // Draw auto-craft status or error below the panel
         if (autoCraft.isActive()) {
-            context.drawString(textRenderer, Component.literal("Crafting..."), x + PANEL_WIDTH / 2 - 30, y + PANEL_HEIGHT + 4, 0xFFFFFF00, true);
+            context.text(textRenderer, Component.literal("Crafting..."), x + PANEL_WIDTH / 2 - 30, y + PANEL_HEIGHT + 4, 0xFFFFFF00, true);
         } else if (autoCraft.getState() == AutoCraftStateMachine.AutoCraftState.ERROR) {
             String err = autoCraft.getErrorMessage();
             if (err == null) err = "Error";
             int textWidth = textRenderer.width(err);
-            context.drawString(textRenderer, Component.literal(err), x + PANEL_WIDTH / 2 - textWidth / 2, y + PANEL_HEIGHT + 4, 0xFFFF5555, true);
+            context.text(textRenderer, Component.literal(err), x + PANEL_WIDTH / 2 - textWidth / 2, y + PANEL_HEIGHT + 4, 0xFFFF5555, true);
         }
     }
 

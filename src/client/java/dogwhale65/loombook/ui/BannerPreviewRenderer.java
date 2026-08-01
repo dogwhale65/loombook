@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.LoomMenu;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -24,12 +24,12 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
  */
 public class BannerPreviewRenderer {
 
-    public static void render(GuiGraphics context, SavedBanner banner, LoomMenu handler, int x, int y, int size) {
+    public static void render(GuiGraphicsExtractor context, SavedBanner banner, LoomMenu handler, int x, int y, int size) {
         // Create a banner item stack with patterns applied
         ItemStack bannerStack = createBannerWithPatterns(banner);
 
         // Render the item using DrawContext
-        context.renderItem(bannerStack, x, y);
+        context.item(bannerStack, x, y);
     }
 
     /**
@@ -49,7 +49,7 @@ public class BannerPreviewRenderer {
                     for (BannerPatternLayer layer : layers) {
                         try {
                             String patternIdStr = layer.patternId();
-                            ResourceLocation patternId = ResourceLocation.tryParse(patternIdStr);
+                            Identifier patternId = Identifier.tryParse(patternIdStr);
                             
                             if (patternId != null) {
                                 Optional<Holder.Reference<Object>> entry = registry.get(patternId);
