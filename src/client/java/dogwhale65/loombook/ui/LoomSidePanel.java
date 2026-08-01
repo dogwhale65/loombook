@@ -1,21 +1,22 @@
 package dogwhale65.loombook.ui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.autocraft.AutoCraftStateMachine;
 import dogwhale65.loombook.data.BannerStorage;
 import dogwhale65.loombook.data.SavedBanner;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.LoomScreen;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.screen.LoomScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.LoomScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.inventory.LoomMenu;
 
 /**
  * Side panel UI for the loom screen showing saved banner patterns.
@@ -30,7 +31,7 @@ public class LoomSidePanel {
     private static final int PADDING = 4;
 
     private final LoomScreen screen;
-    private final LoomScreenHandler handler;
+    private final LoomMenu handler;
     private int x;
     private int y;
     private int scrollOffset = 0;
@@ -43,7 +44,7 @@ public class LoomSidePanel {
     private int lastClickedIndex = -1;
     private java.util.Queue<String> craftQueue = new java.util.LinkedList<>();
 
-    public LoomSidePanel(LoomScreen screen, LoomScreenHandler handler, int x, int y) {
+    public LoomSidePanel(LoomScreen screen, LoomMenu handler, int x, int y) {
         this.screen = screen;
         this.handler = handler;
         this.x = x;
@@ -52,9 +53,9 @@ public class LoomSidePanel {
         Loombook.LOGGER.info("LoomSidePanel created at x={}, y={}", x, y);
     }
 
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        TextRenderer textRenderer = client.textRenderer;
+    public void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        Minecraft client = Minecraft.getInstance();
+        Font textRenderer = client.font;
 
         // Draw panel background with gradient effect
         context.fill(x, y, x + PANEL_WIDTH, y + PANEL_HEIGHT, 0xE8000000);
@@ -67,7 +68,7 @@ public class LoomSidePanel {
 
         // Draw header with subtle background
         context.fill(x, y, x + PANEL_WIDTH, y + HEADER_HEIGHT + PADDING + 2, 0xFF1A1A2E);
-        context.drawText(textRenderer, Text.literal("Saved"), x + PADDING, y + PADDING, 0xFF4169E1, true);
+        context.text(textRenderer, Component.literal("Saved"), x + PADDING, y + PADDING, 0xFF4169E1, true);
 
         // Draw save button
         int saveButtonY = y + HEADER_HEIGHT + PADDING;
@@ -75,8 +76,8 @@ public class LoomSidePanel {
         int saveButtonColor = saveHovered ? 0xFF66BB6A : 0xFF2E7D32;
         context.fill(x + PADDING, saveButtonY, x + PANEL_WIDTH - PADDING, saveButtonY + SAVE_BUTTON_HEIGHT, saveButtonColor);
         String saveText = "+ Save";
-        int saveTextWidth = textRenderer.getWidth(saveText);
-        context.drawText(textRenderer, Text.literal(saveText), x + PANEL_WIDTH / 2 - saveTextWidth / 2, saveButtonY + 3, 0xFFFFFFFF, true);
+        int saveTextWidth = textRenderer.width(saveText);
+        context.text(textRenderer, Component.literal(saveText), x + PANEL_WIDTH / 2 - saveTextWidth / 2, saveButtonY + 3, 0xFFFFFFFF, true);
 
         // Draw import/export buttons
         int importButtonY = saveButtonY + SAVE_BUTTON_HEIGHT + PADDING;
@@ -86,18 +87,18 @@ public class LoomSidePanel {
         int importButtonColor = importHovered ? 0xFF5C7CFA : 0xFF1E40AF;
         context.fill(x + PADDING, importButtonY, x + PADDING + importButtonWidth, importButtonY + BUTTON_HEIGHT, importButtonColor);
         String importText = "Import";
-        int importTextWidth = textRenderer.getWidth(importText);
+        int importTextWidth = textRenderer.width(importText);
         int importButtonCenterX = x + PADDING + importButtonWidth / 2;
-        context.drawText(textRenderer, Text.literal(importText), importButtonCenterX - importTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
+        context.text(textRenderer, Component.literal(importText), importButtonCenterX - importTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
 
         int exportButtonX = x + PADDING + importButtonWidth + 2;
         boolean exportHovered = isInExportButton(mouseX, mouseY);
         int exportButtonColor = exportHovered ? 0xFF5C7CFA : 0xFF1E40AF;
         context.fill(exportButtonX, importButtonY, x + PANEL_WIDTH - PADDING, importButtonY + BUTTON_HEIGHT, exportButtonColor);
         String exportText = "Export";
-        int exportTextWidth = textRenderer.getWidth(exportText);
+        int exportTextWidth = textRenderer.width(exportText);
         int exportButtonCenterX = exportButtonX + importButtonWidth / 2;
-        context.drawText(textRenderer, Text.literal(exportText), exportButtonCenterX - exportTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
+        context.text(textRenderer, Component.literal(exportText), exportButtonCenterX - exportTextWidth / 2, importButtonY + 1, 0xFFFFFFFF, true);
 
         // Draw saved patterns
         List<SavedBanner> banners = BannerStorage.getInstance().getBanners();
@@ -106,7 +107,7 @@ public class LoomSidePanel {
         int maxVisible = visibleHeight / ENTRY_HEIGHT;
 
         // Draw count of saved banners in header
-        context.drawText(textRenderer, Text.literal("(" + banners.size() + ")"), x + PANEL_WIDTH - 22, y + PADDING, 0xFFAAAAAA, true);
+        context.text(textRenderer, Component.literal("(" + banners.size() + ")"), x + PANEL_WIDTH - 22, y + PADDING, 0xFFAAAAAA, true);
 
         for (int i = 0; i < maxVisible && i + scrollOffset < banners.size(); i++) {
             SavedBanner banner = banners.get(i + scrollOffset);
@@ -119,7 +120,7 @@ public class LoomSidePanel {
             
             // Draw subtle border for selected items
             if (isSelected) {
-                context.drawBorder(x + PADDING, entryY, PANEL_WIDTH - PADDING * 2, ENTRY_HEIGHT - 2, 0xFF5C7CFA);
+                context.outline(x + PADDING, entryY, PANEL_WIDTH - PADDING * 2, ENTRY_HEIGHT - 2, 0xFF5C7CFA);
             }
 
             // Draw banner preview
@@ -129,25 +130,25 @@ public class LoomSidePanel {
             String name = banner.getDisplayName();
             int maxNameWidth = PANEL_WIDTH - PADDING - 22 - 40; // Account for preview, padding, and buttons
             String displayName = name;
-            while (displayName.length() > 0 && textRenderer.getWidth(displayName) > maxNameWidth) {
+            while (displayName.length() > 0 && textRenderer.width(displayName) > maxNameWidth) {
                 displayName = displayName.substring(0, displayName.length() - 1);
             }
             if (!displayName.equals(name)) {
                 displayName = displayName.substring(0, Math.max(0, displayName.length() - 2)) + "..";
             }
-            context.drawText(textRenderer, Text.literal(displayName), x + PADDING + 22, entryY + 8, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal(displayName), x + PADDING + 22, entryY + 8, 0xFFFFFFFF, true);
 
             // Draw rename button
             int renameX = x + PANEL_WIDTH - PADDING - 28;
             boolean renameHovered = mouseX >= renameX && mouseX < renameX + 12 && mouseY >= entryY + 4 && mouseY < entryY + 18;
             int renameColor = renameHovered ? 0xFF5C7CFA : 0xFFAAAAAA;
-            context.drawText(textRenderer, Text.literal("E"), renameX + 2, entryY + 7, renameColor, true);
+            context.text(textRenderer, Component.literal("E"), renameX + 2, entryY + 7, renameColor, true);
 
             // Draw delete button
             int deleteX = x + PANEL_WIDTH - PADDING - 12;
             boolean deleteHovered = mouseX >= deleteX && mouseX < deleteX + 12 && mouseY >= entryY + 4 && mouseY < entryY + 18;
             int deleteColor = deleteHovered ? 0xFFFF6B6B : 0xFFAAAAAA;
-            context.drawText(textRenderer, Text.literal("X"), deleteX + 2, entryY + 7, deleteColor, true);
+            context.text(textRenderer, Component.literal("X"), deleteX + 2, entryY + 7, deleteColor, true);
         }
 
         // Draw craft button if any banners are selected
@@ -157,30 +158,34 @@ public class LoomSidePanel {
             int craftButtonColor = craftHovered ? 0xFF66BB6A : 0xFF2E7D32;
             context.fill(x + PADDING, craftButtonY, x + PANEL_WIDTH - PADDING, craftButtonY + BUTTON_HEIGHT, craftButtonColor);
             String craftText = selectedBannerIds.size() > 1 ? "Craft (" + selectedBannerIds.size() + ")" : "Craft";
-            int craftTextWidth = textRenderer.getWidth(craftText);
-            context.drawText(textRenderer, Text.literal(craftText), x + PANEL_WIDTH / 2 - craftTextWidth / 2, craftButtonY + 1, 0xFFFFFFFF, true);
+            int craftTextWidth = textRenderer.width(craftText);
+            context.text(textRenderer, Component.literal(craftText), x + PANEL_WIDTH / 2 - craftTextWidth / 2, craftButtonY + 1, 0xFFFFFFFF, true);
         }
 
         // Draw scroll indicators if needed (only if no craft button is showing)
         if (scrollOffset > 0) {
-            context.drawText(textRenderer, Text.literal("^"), x + PANEL_WIDTH / 2 - 2, listStartY - 10, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal("^"), x + PANEL_WIDTH / 2 - 2, listStartY - 10, 0xFFFFFFFF, true);
         }
         if (scrollOffset + maxVisible < banners.size() && selectedBannerIds.isEmpty()) {
-            context.drawText(textRenderer, Text.literal("v"), x + PANEL_WIDTH / 2 - 2, y + PANEL_HEIGHT - 12, 0xFFFFFFFF, true);
+            context.text(textRenderer, Component.literal("v"), x + PANEL_WIDTH / 2 - 2, y + PANEL_HEIGHT - 12, 0xFFFFFFFF, true);
         }
 
         // Draw auto-craft status or error below the panel
         if (autoCraft.isActive()) {
-            context.drawText(textRenderer, Text.literal("Crafting..."), x + PANEL_WIDTH / 2 - 30, y + PANEL_HEIGHT + 4, 0xFFFFFF00, true);
+            context.text(textRenderer, Component.literal("Crafting..."), x + PANEL_WIDTH / 2 - 30, y + PANEL_HEIGHT + 4, 0xFFFFFF00, true);
         } else if (autoCraft.getState() == AutoCraftStateMachine.AutoCraftState.ERROR) {
             String err = autoCraft.getErrorMessage();
             if (err == null) err = "Error";
-            int textWidth = textRenderer.getWidth(err);
-            context.drawText(textRenderer, Text.literal(err), x + PANEL_WIDTH / 2 - textWidth / 2, y + PANEL_HEIGHT + 4, 0xFFFF5555, true);
+            int textWidth = textRenderer.width(err);
+            context.text(textRenderer, Component.literal(err), x + PANEL_WIDTH / 2 - textWidth / 2, y + PANEL_HEIGHT + 4, 0xFFFF5555, true);
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent) {
+		double mouseX = mouseButtonEvent.x();
+		double mouseY = mouseButtonEvent.y();
+		int button = mouseButtonEvent.button();
+
         // Handle right-click (button 1) for materials screen
         if (button == 1) {
             return handleRightClick(mouseX, mouseY);
@@ -204,7 +209,7 @@ public class LoomSidePanel {
         // Check import button
         if (isInImportButton(mx, my)) {
             Loombook.LOGGER.info("Import button clicked!");
-            MinecraftClient.getInstance().setScreen(new ImportBannerScreen(screen));
+            Minecraft.getInstance().gui.setScreen(new ImportBannerScreen(screen));
             return true;
         }
 
@@ -238,10 +243,10 @@ public class LoomSidePanel {
         }
 
         // Get keyboard modifiers
-        boolean isCtrlPressed = InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL) ||
-                               InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_CONTROL);
-        boolean isShiftPressed = InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
-                                InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+        boolean isCtrlPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) ||
+                               InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL);
+        boolean isShiftPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
+                                InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         for (int i = 0; i < maxVisible && i + scrollOffset < banners.size(); i++) {
             SavedBanner banner = banners.get(i + scrollOffset);
@@ -251,7 +256,7 @@ public class LoomSidePanel {
                 // Check if rename button clicked
                 int renameX = x + PANEL_WIDTH - PADDING - 26;
                 if (mx >= renameX && mx < renameX + 10 && my >= entryY + 6 && my < entryY + 16) {
-                    MinecraftClient.getInstance().setScreen(new RenameBannerScreen(screen, banner.getId(), banner.getName()));
+                    Minecraft.getInstance().gui.setScreen(new RenameBannerScreen(screen, banner.getId(), banner.getName()));
                     return true;
                 }
 
@@ -329,15 +334,15 @@ public class LoomSidePanel {
         Loombook.LOGGER.info("Attempting to save banner");
 
         // Check if dye slot (slot 1) and pattern slot (slot 2) are empty
-        var dyeStack = handler.getSlot(1).getStack();
-        var patternStack = handler.getSlot(2).getStack();
+        var dyeStack = handler.getSlot(1).getItem();
+        var patternStack = handler.getSlot(2).getItem();
         boolean noDyeOrPattern = dyeStack.isEmpty() && patternStack.isEmpty();
 
         Loombook.LOGGER.info("Dye slot empty: {}, Pattern slot empty: {}", dyeStack.isEmpty(), patternStack.isEmpty());
 
         // If no dye and no pattern, save from banner input slot (slot 0)
         if (noDyeOrPattern) {
-            var bannerStack = handler.getSlot(0).getStack();
+            var bannerStack = handler.getSlot(0).getItem();
             Loombook.LOGGER.info("No dye or pattern in loom, saving from banner slot");
 
             if (bannerStack.isEmpty()) {
@@ -358,7 +363,7 @@ public class LoomSidePanel {
         }
 
         // Otherwise, save from output slot (slot 3)
-        var outputStack = handler.getSlot(3).getStack();
+        var outputStack = handler.getSlot(3).getItem();
         Loombook.LOGGER.info("Output slot stack: {}, isEmpty: {}", outputStack, outputStack.isEmpty());
 
         if (outputStack.isEmpty()) {
@@ -425,7 +430,7 @@ public class LoomSidePanel {
             String json = BannerStorage.getInstance().exportBannerToJson(bannerId);
             
             if (json != null) {
-                MinecraftClient.getInstance().keyboard.setClipboard(json);
+                Minecraft.getInstance().keyboardHandler.setClipboard(json);
                 Loombook.LOGGER.info("Banner exported to clipboard");
             }
         } else {
@@ -444,7 +449,7 @@ public class LoomSidePanel {
             }
             jsonArray.append("]");
             
-            MinecraftClient.getInstance().keyboard.setClipboard(jsonArray.toString());
+            Minecraft.getInstance().keyboardHandler.setClipboard(jsonArray.toString());
             Loombook.LOGGER.info("Exported {} banners to clipboard", selectedBannerIds.size());
         }
     }
@@ -485,7 +490,7 @@ public class LoomSidePanel {
 
             if (isInPatternEntry(mx, my, entryY)) {
                 // Open materials screen
-                MinecraftClient.getInstance().setScreen(new BannerMaterialsScreen(screen, banner));
+                Minecraft.getInstance().gui.setScreen(new BannerMaterialsScreen(screen, banner));
                 return true;
             }
         }
