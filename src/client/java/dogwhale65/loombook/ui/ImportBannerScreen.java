@@ -4,6 +4,9 @@ import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerStorage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -33,7 +36,7 @@ public class ImportBannerScreen extends Screen {
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
         context.fill(editorX, editorY, editorX + EDITOR_WIDTH, editorY + EDITOR_HEIGHT, 0xFF1F1F1F);
-        context.renderOutline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
+        context.submitOutline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
 
         // Draw title
         context.drawString(this.font, Component.literal("Paste Banner JSON or /give Command"),
@@ -101,8 +104,10 @@ public class ImportBannerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button != 0) return false;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() != 0) return false;
+        double mouseX = event.x();
+        double mouseY = event.y();
 
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
@@ -141,12 +146,11 @@ public class ImportBannerScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         String text = textBuffer.toString();
-        boolean isCtrlPressed = (modifiers & 2) != 0; // GLFW_MOD_CONTROL
 
-        // Ctrl+V for paste
-        if (isCtrlPressed && keyCode == 86) { // V key
+        if (event.isPaste()) {
             String clipboard = this.minecraft.keyboardHandler.getClipboard();
             if (clipboard != null && !clipboard.isEmpty()) {
                 textBuffer.insert(cursorPos, clipboard);
@@ -198,11 +202,12 @@ public class ImportBannerScreen extends Screen {
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
+        char chr = (char) event.codepoint();
         if (chr >= 32 && chr <= 126) { // Printable ASCII
             textBuffer.insert(cursorPos, chr);
             cursorPos++;

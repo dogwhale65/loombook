@@ -5,6 +5,7 @@ import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.autocraft.AutoCraftStateMachine;
 import dogwhale65.loombook.data.BannerStorage;
 import dogwhale65.loombook.data.SavedBanner;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
@@ -119,7 +120,7 @@ public class LoomSidePanel {
             
             // Draw subtle border for selected items
             if (isSelected) {
-                context.renderOutline(x + PADDING, entryY, PANEL_WIDTH - PADDING * 2, ENTRY_HEIGHT - 2, 0xFF5C7CFA);
+                context.submitOutline(x + PADDING, entryY, PANEL_WIDTH - PADDING * 2, ENTRY_HEIGHT - 2, 0xFF5C7CFA);
             }
 
             // Draw banner preview
@@ -180,7 +181,11 @@ public class LoomSidePanel {
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent) {
+		double mouseX = mouseButtonEvent.x();
+		double mouseY = mouseButtonEvent.y();
+		int button = mouseButtonEvent.button();
+
         // Handle right-click (button 1) for materials screen
         if (button == 1) {
             return handleRightClick(mouseX, mouseY);
@@ -238,10 +243,10 @@ public class LoomSidePanel {
         }
 
         // Get keyboard modifiers
-        boolean isCtrlPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) ||
-                               InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL);
-        boolean isShiftPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
-                                InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+        boolean isCtrlPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL) ||
+                               InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_CONTROL);
+        boolean isShiftPressed = InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
+                                InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
 
         for (int i = 0; i < maxVisible && i + scrollOffset < banners.size(); i++) {
             SavedBanner banner = banners.get(i + scrollOffset);

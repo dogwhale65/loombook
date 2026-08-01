@@ -4,6 +4,7 @@ import dogwhale65.loombook.ui.LoomSidePanel;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.LoomScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.LoomMenu;
@@ -42,8 +43,8 @@ public abstract class LoomScreenMixin extends AbstractContainerScreen<LoomMenu> 
     }
 
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-    private void loombook$onMouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (loombook$sidePanel != null && loombook$sidePanel.mouseClicked(mouseX, mouseY, button)) {
+    private void loombook$onMouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl, CallbackInfoReturnable<Boolean> cir) {
+        if (loombook$sidePanel != null && loombook$sidePanel.mouseClicked(mouseButtonEvent)) {
             cir.setReturnValue(true);
         }
     }
