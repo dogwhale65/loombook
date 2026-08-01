@@ -1,12 +1,11 @@
 package dogwhale65.loombook.data;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.util.DyeColor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 /**
  * Represents a saved banner design with all its pattern layers.
@@ -27,7 +26,7 @@ public class SavedBanner {
     public SavedBanner(String name, DyeColor baseColor, List<BannerPatternLayer> layers) {
         this();
         this.name = name;
-        this.baseColor = baseColor.getId();
+        this.baseColor = baseColor.getName();
         this.layers = new ArrayList<>(layers);
     }
 
@@ -52,7 +51,7 @@ public class SavedBanner {
     }
 
     public DyeColor getBaseColorEnum() {
-        return DyeColor.byId(baseColor, DyeColor.WHITE);
+        return DyeColor.byName(baseColor, DyeColor.WHITE);
     }
 
     public void setBaseColor(String baseColor) {

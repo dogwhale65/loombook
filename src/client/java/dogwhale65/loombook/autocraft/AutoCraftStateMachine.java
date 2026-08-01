@@ -3,17 +3,15 @@ package dogwhale65.loombook.autocraft;
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerPatternLayer;
 import dogwhale65.loombook.data.SavedBanner;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.LoomScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.DyeColor;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.LoomMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class AutoCraftStateMachine {
     private static final int TICK_DELAY = 3;
@@ -24,7 +22,7 @@ public class AutoCraftStateMachine {
     private static final int INVENTORY_START = 4;
     private static final int INVENTORY_END = 40;
 
-    private final LoomScreenHandler handler;
+    private final LoomMenu handler;
     private AutoCraftState state = AutoCraftState.IDLE;
     private SavedBanner targetBanner;
     private int currentLayerIndex = 0;
@@ -45,7 +43,7 @@ public class AutoCraftStateMachine {
         ERROR
     }
 
-    public AutoCraftStateMachine(LoomScreenHandler handler) {
+    public AutoCraftStateMachine(LoomMenu handler) {
         this.handler = handler;
     }
 
@@ -112,7 +110,7 @@ public class AutoCraftStateMachine {
     }
 
     private void placeBanner() {
-        ItemStack bannerInSlot = handler.getSlot(BANNER_SLOT).getStack();
+        ItemStack bannerInSlot = handler.getSlot(BANNER_SLOT).getItem();
 
         if (!bannerInSlot.isEmpty()) {
             // Banner already in slot
@@ -146,7 +144,7 @@ public class AutoCraftStateMachine {
         BannerPatternLayer layer = targetBanner.getLayers().get(currentLayerIndex);
         Item dyeItem = SavedBanner.getDyeItem(layer.getDyeColorEnum());
 
-        ItemStack dyeInSlot = handler.getSlot(DYE_SLOT).getStack();
+        ItemStack dyeInSlot = handler.getSlot(DYE_SLOT).getItem();
         if (!dyeInSlot.isEmpty()) {
             // Check if it's the right dye
             if (dyeInSlot.getItem() == dyeItem) {
@@ -162,7 +160,7 @@ public class AutoCraftStateMachine {
             quickMoveToSlot(slotId, DYE_SLOT);
             state = AutoCraftState.PLACING_PATTERN_ITEM;
         } else {
-            error("Cannot find " + layer.getDyeColorEnum().getId() + " dye");
+            error("Cannot find " + layer.getDyeColorEnum().getName() + " dye");
         }
     }
 
@@ -178,7 +176,7 @@ public class AutoCraftStateMachine {
             return;
         }
 
-        ItemStack patternInSlot = handler.getSlot(PATTERN_SLOT).getStack();
+        ItemStack patternInSlot = handler.getSlot(PATTERN_SLOT).getItem();
         if (!patternInSlot.isEmpty()) {
             if (patternInSlot.getItem() == patternItem) {
                 state = AutoCraftState.SELECTING_PATTERN;
@@ -201,7 +199,7 @@ public class AutoCraftStateMachine {
         String patternId = layer.patternId();
 
         // Find the pattern index in the loom's pattern list
-        List<?> patterns = handler.getBannerPatterns();
+        List<?> patterns = handler.getSelectablePatterns();
         int patternIndex = -1;
         for (int i = 0; i < patterns.size(); i++) {
             Object pattern = patterns.get(i);
@@ -215,9 +213,9 @@ public class AutoCraftStateMachine {
 
         if (patternIndex >= 0) {
             // Click the pattern button
-            MinecraftClient client = MinecraftClient.getInstance();
-            if (client.interactionManager != null) {
-                client.interactionManager.clickButton(handler.syncId, patternIndex);
+            Minecraft client = Minecraft.getInstance();
+            if (client.gameMode != null) {
+                client.gameMode.handleInventoryButtonClick(handler.containerId, patternIndex);
             }
             state = AutoCraftState.WAITING_FOR_OUTPUT;
         } else {
@@ -228,7 +226,7 @@ public class AutoCraftStateMachine {
     }
 
     private void waitForOutput() {
-        ItemStack output = handler.getSlot(OUTPUT_SLOT).getStack();
+        ItemStack output = handler.getSlot(OUTPUT_SLOT).getItem();
         if (!output.isEmpty()) {
             state = AutoCraftState.TAKING_OUTPUT;
         }
@@ -237,25 +235,25 @@ public class AutoCraftStateMachine {
 
     private void takeOutput() {
         // Take the output
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.interactionManager != null && client.player != null) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.gameMode != null && client.player != null) {
             // Shift-click to move to inventory, or if more layers, we'll put back in banner slot
             if (currentLayerIndex + 1 < targetBanner.getLayers().size()) {
                 // More layers to go - take output and put in banner slot
                 // First pick up the output
-                client.interactionManager.clickSlot(handler.syncId, OUTPUT_SLOT, 0, SlotActionType.PICKUP, client.player);
+                client.gameMode.handleInventoryMouseClick(handler.containerId, OUTPUT_SLOT, 0, ClickType.PICKUP, client.player);
                 // Return pattern items to inventory before next layer
                 returnPatternItemsToInventory();
                 // Then place in banner slot (clear banner slot first if needed)
-                ItemStack bannerSlotStack = handler.getSlot(BANNER_SLOT).getStack();
+                ItemStack bannerSlotStack = handler.getSlot(BANNER_SLOT).getItem();
                 if (!bannerSlotStack.isEmpty()) {
                     // Banner slot should be empty after crafting, but just in case
-                    client.interactionManager.clickSlot(handler.syncId, BANNER_SLOT, 0, SlotActionType.QUICK_MOVE, client.player);
+                    client.gameMode.handleInventoryMouseClick(handler.containerId, BANNER_SLOT, 0, ClickType.QUICK_MOVE, client.player);
                 }
-                client.interactionManager.clickSlot(handler.syncId, BANNER_SLOT, 0, SlotActionType.PICKUP, client.player);
+                client.gameMode.handleInventoryMouseClick(handler.containerId, BANNER_SLOT, 0, ClickType.PICKUP, client.player);
             } else {
                 // Last layer - move to inventory
-                client.interactionManager.clickSlot(handler.syncId, OUTPUT_SLOT, 0, SlotActionType.QUICK_MOVE, client.player);
+                client.gameMode.handleInventoryMouseClick(handler.containerId, OUTPUT_SLOT, 0, ClickType.QUICK_MOVE, client.player);
                 // Return pattern items to inventory
                 returnPatternItemsToInventory();
             }
@@ -281,7 +279,7 @@ public class AutoCraftStateMachine {
 
     private int findItemInInventory(Item item) {
         for (int i = INVENTORY_START; i < INVENTORY_END; i++) {
-            ItemStack stack = handler.getSlot(i).getStack();
+            ItemStack stack = handler.getSlot(i).getItem();
             if (!stack.isEmpty() && stack.getItem() == item) {
                 return i;
             }
@@ -291,9 +289,9 @@ public class AutoCraftStateMachine {
 
     private int findBlankBannerInInventory(Item item) {
         for (int i = INVENTORY_START; i < INVENTORY_END; i++) {
-            ItemStack stack = handler.getSlot(i).getStack();
+            ItemStack stack = handler.getSlot(i).getItem();
             if (!stack.isEmpty() && stack.getItem() == item) {
-                BannerPatternsComponent patterns = stack.get(DataComponentTypes.BANNER_PATTERNS);
+                BannerPatternLayers patterns = stack.get(DataComponents.BANNER_PATTERNS);
                 if (patterns == null || patterns.layers().isEmpty()) {
                     return i;
                 }
@@ -303,30 +301,30 @@ public class AutoCraftStateMachine {
     }
 
     private void quickMoveToSlot(int fromSlot, int toSlot) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.interactionManager != null && client.player != null) {
-            ItemStack sourceStack = handler.getSlot(fromSlot).getStack();
+        Minecraft client = Minecraft.getInstance();
+        if (client.gameMode != null && client.player != null) {
+            ItemStack sourceStack = handler.getSlot(fromSlot).getItem();
             if (sourceStack.isEmpty()) return;
             
             // 1. Pick up the entire stack from source (Left Click)
-            client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
+            client.gameMode.handleInventoryMouseClick(handler.containerId, fromSlot, 0, ClickType.PICKUP, client.player);
             
             // 2. Place ONE item into destination (Right Click)
             // Button 1 is Right Click, which places one item from the cursor stack
-            client.interactionManager.clickSlot(handler.syncId, toSlot, 1, SlotActionType.PICKUP, client.player);
+            client.gameMode.handleInventoryMouseClick(handler.containerId, toSlot, 1, ClickType.PICKUP, client.player);
             
             // 3. Put remaining items back into source (Left Click)
             // We do this unconditionally to ensure we don't hold onto items.
             // If we had >1 items, we are holding the rest. Clicking source puts them back.
             // If we had 1 item, we placed it. Cursor is empty. Source is empty. Clicking source does nothing.
-            client.interactionManager.clickSlot(handler.syncId, fromSlot, 0, SlotActionType.PICKUP, client.player);
+            client.gameMode.handleInventoryMouseClick(handler.containerId, fromSlot, 0, ClickType.PICKUP, client.player);
         }
     }
 
     private void quickMoveToInventory(int slot) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.interactionManager != null && client.player != null) {
-            client.interactionManager.clickSlot(handler.syncId, slot, 0, SlotActionType.QUICK_MOVE, client.player);
+        Minecraft client = Minecraft.getInstance();
+        if (client.gameMode != null && client.player != null) {
+            client.gameMode.handleInventoryMouseClick(handler.containerId, slot, 0, ClickType.QUICK_MOVE, client.player);
         }
     }
 
@@ -352,7 +350,7 @@ public class AutoCraftStateMachine {
         // Check for base banner
         Item bannerItem = banner.getBaseBannerItem();
         int bannerSlotId = findBlankBannerInInventory(bannerItem);
-        if (bannerSlotId < 0 && handler.getSlot(BANNER_SLOT).getStack().isEmpty()) {
+        if (bannerSlotId < 0 && handler.getSlot(BANNER_SLOT).getItem().isEmpty()) {
             return "Missing base banner";
         }
 
@@ -363,15 +361,15 @@ public class AutoCraftStateMachine {
             // Check dye
             Item dyeItem = SavedBanner.getDyeItem(layer.getDyeColorEnum());
             int dyeSlotId = findItemInInventory(dyeItem);
-            if (dyeSlotId < 0 && handler.getSlot(DYE_SLOT).getStack().isEmpty()) {
-                return "Missing " + layer.getDyeColorEnum().getId() + " dye for pattern " + (i + 1);
+            if (dyeSlotId < 0 && handler.getSlot(DYE_SLOT).getItem().isEmpty()) {
+                return "Missing " + layer.getDyeColorEnum().getName() + " dye for pattern " + (i + 1);
             }
 
             // Check pattern item if required
             Item patternItem = getRequiredPatternItem(layer.patternId());
             if (patternItem != null) {
                 int patternSlotId = findItemInInventory(patternItem);
-                if (patternSlotId < 0 && handler.getSlot(PATTERN_SLOT).getStack().isEmpty()) {
+                if (patternSlotId < 0 && handler.getSlot(PATTERN_SLOT).getItem().isEmpty()) {
                     return "Missing " + patternItem.getName().getString() + " for pattern " + (i + 1);
                 }
             }
@@ -384,12 +382,12 @@ public class AutoCraftStateMachine {
      * Returns pattern items to inventory after crafting is complete
      */
     private void returnPatternItemsToInventory() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.interactionManager != null && client.player != null) {
-            ItemStack patternSlot = handler.getSlot(PATTERN_SLOT).getStack();
+        Minecraft client = Minecraft.getInstance();
+        if (client.gameMode != null && client.player != null) {
+            ItemStack patternSlot = handler.getSlot(PATTERN_SLOT).getItem();
             if (!patternSlot.isEmpty()) {
                 // Move pattern item back to inventory
-                client.interactionManager.clickSlot(handler.syncId, PATTERN_SLOT, 0, SlotActionType.QUICK_MOVE, client.player);
+                client.gameMode.handleInventoryMouseClick(handler.containerId, PATTERN_SLOT, 0, ClickType.QUICK_MOVE, client.player);
             }
         }
     }

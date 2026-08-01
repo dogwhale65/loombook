@@ -2,9 +2,12 @@ package dogwhale65.loombook.ui;
 
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerStorage;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
 /**
  * Screen for renaming a saved banner.
@@ -21,7 +24,7 @@ public class RenameBannerScreen extends Screen {
     private int cursorPos = 0;
 
     public RenameBannerScreen(Screen previousScreen, String bannerId, String currentName) {
-        super(Text.literal("Rename Banner"));
+        super(Component.literal("Rename Banner"));
         this.previousScreen = previousScreen;
         this.bannerId = bannerId;
         this.currentName = currentName;
@@ -30,7 +33,7 @@ public class RenameBannerScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // Draw semi-transparent background
         context.fill(0, 0, this.width, this.height, 0xAA000000);
 
@@ -38,22 +41,22 @@ public class RenameBannerScreen extends Screen {
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
         context.fill(editorX, editorY, editorX + EDITOR_WIDTH, editorY + EDITOR_HEIGHT, 0xFF1F1F1F);
-        context.drawBorder(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
+        context.submitOutline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
 
         // Draw title
-        context.drawText(this.textRenderer, Text.literal("Enter new name:"),
+        context.drawString(this.font, Component.literal("Enter new name:"),
             editorX + PADDING, editorY - 20, 0xFFFFFFFF, true);
 
         // Draw text content
         int textStartX = editorX + PADDING;
         int textStartY = editorY + PADDING;
         String text = textBuffer.toString();
-        context.drawText(this.textRenderer, Text.literal(text), textStartX, textStartY, 0xFFFFFFFF, true);
+        context.drawString(this.font, Component.literal(text), textStartX, textStartY, 0xFFFFFFFF, true);
 
         // Draw cursor
         if (cursorPos >= 0 && cursorPos <= text.length()) {
             String beforeCursor = text.substring(0, cursorPos);
-            int cursorX = textStartX + this.textRenderer.getWidth(beforeCursor);
+            int cursorX = textStartX + this.font.width(beforeCursor);
             context.fill(cursorX, textStartY, cursorX + 1, textStartY + 10, 0xFFFFFFFF);
         }
 
@@ -65,21 +68,23 @@ public class RenameBannerScreen extends Screen {
         boolean okHovered = mouseX >= okButtonX && mouseX < okButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20;
         int okColor = okHovered ? 0xFF4CAF50 : 0xFF2E7D32;
         context.fill(okButtonX, buttonY, okButtonX + 50, buttonY + 20, okColor);
-        context.drawText(this.textRenderer, Text.literal("OK"), okButtonX + 15, buttonY + 6, 0xFFFFFFFF, true);
+        context.drawString(this.font, Component.literal("OK"), okButtonX + 15, buttonY + 6, 0xFFFFFFFF, true);
 
         // Cancel button
         int cancelButtonX = (this.width / 2) + 10;
         boolean cancelHovered = mouseX >= cancelButtonX && mouseX < cancelButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20;
         int cancelColor = cancelHovered ? 0xFFFF5555 : 0xFFCC0000;
         context.fill(cancelButtonX, buttonY, cancelButtonX + 50, buttonY + 20, cancelColor);
-        context.drawText(this.textRenderer, Text.literal("Cancel"), cancelButtonX + 5, buttonY + 6, 0xFFFFFFFF, true);
+        context.drawString(this.font, Component.literal("Cancel"), cancelButtonX + 5, buttonY + 6, 0xFFFFFFFF, true);
 
         super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button != 0) return false;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() != 0) return false;
+        double mouseX = event.x();
+        double mouseY = event.y();
 
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
@@ -95,7 +100,7 @@ public class RenameBannerScreen extends Screen {
         // Cancel button
         int cancelButtonX = (this.width / 2) + 10;
         if (mouseX >= cancelButtonX && mouseX < cancelButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20) {
-            this.client.setScreen(previousScreen);
+            this.minecraft.setScreen(previousScreen);
             return true;
         }
 
@@ -112,7 +117,8 @@ public class RenameBannerScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         String text = textBuffer.toString();
 
         if (keyCode == 259) { // Backspace
@@ -141,11 +147,12 @@ public class RenameBannerScreen extends Screen {
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
+        char chr = (char) event.codepoint();
         if (chr >= 32 && chr <= 126) { // Printable ASCII
             textBuffer.insert(cursorPos, chr);
             cursorPos++;
@@ -163,12 +170,12 @@ public class RenameBannerScreen extends Screen {
 
         BannerStorage.getInstance().renameBanner(bannerId, newName);
         Loombook.LOGGER.info("Banner renamed to: {}", newName);
-        this.client.setScreen(previousScreen);
+        this.minecraft.setScreen(previousScreen);
     }
 
     @Override
-    public void close() {
-        this.client.setScreen(previousScreen);
+    public void onClose() {
+        this.minecraft.setScreen(previousScreen);
     }
 
     @Override

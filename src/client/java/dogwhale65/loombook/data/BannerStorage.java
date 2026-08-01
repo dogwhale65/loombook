@@ -9,8 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerPatternLayer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.DyeColor;
-
+import net.minecraft.world.item.DyeColor;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;

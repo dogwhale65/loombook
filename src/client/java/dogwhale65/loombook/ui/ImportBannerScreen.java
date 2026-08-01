@@ -2,9 +2,12 @@ package dogwhale65.loombook.ui;
 
 import dogwhale65.loombook.Loombook;
 import dogwhale65.loombook.data.BannerStorage;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
 /**
  * Screen for importing banner JSON data with a text editor.
@@ -20,12 +23,12 @@ public class ImportBannerScreen extends Screen {
     private int scrollOffset = 0;
 
     public ImportBannerScreen(Screen previousScreen) {
-        super(Text.literal("Import Banner"));
+        super(Component.literal("Import Banner"));
         this.previousScreen = previousScreen;
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // Draw semi-transparent background
         context.fill(0, 0, this.width, this.height, 0xAA000000);
 
@@ -33,10 +36,10 @@ public class ImportBannerScreen extends Screen {
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
         context.fill(editorX, editorY, editorX + EDITOR_WIDTH, editorY + EDITOR_HEIGHT, 0xFF1F1F1F);
-        context.drawBorder(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
+        context.submitOutline(editorX, editorY, EDITOR_WIDTH, EDITOR_HEIGHT, 0xFFFFFFFF);
 
         // Draw title
-        context.drawText(this.textRenderer, Text.literal("Paste Banner JSON or /give Command"),
+        context.drawString(this.font, Component.literal("Paste Banner JSON or /give Command"),
             this.width / 2 - 120, editorY - 20, 0xFFFFFFFF, true);
 
         // Draw text content with scrolling
@@ -55,7 +58,7 @@ public class ImportBannerScreen extends Screen {
         for (int i = 0; i < lines.length; i++) {
             if (lineY > textStartY + textHeight) break;
             if (lineY + 10 > textStartY) {
-                context.drawText(this.textRenderer, Text.literal(lines[i]), textStartX, lineY, 0xFFFFFFFF, true);
+                context.drawString(this.font, Component.literal(lines[i]), textStartX, lineY, 0xFFFFFFFF, true);
             }
             lineY += 10;
         }
@@ -63,7 +66,7 @@ public class ImportBannerScreen extends Screen {
         // Draw cursor
         if (cursorPos >= 0 && cursorPos <= text.length()) {
             String beforeCursor = text.substring(0, cursorPos);
-            int cursorX = textStartX + this.textRenderer.getWidth(beforeCursor.split("\n")[beforeCursor.split("\n").length - 1]);
+            int cursorX = textStartX + this.font.width(beforeCursor.split("\n")[beforeCursor.split("\n").length - 1]);
             int cursorLineNum = beforeCursor.split("\n", -1).length - 1;
             int cursorY = textStartY + (cursorLineNum * 10) - scrollOffset;
             
@@ -85,8 +88,8 @@ public class ImportBannerScreen extends Screen {
         int okColor = okHovered ? 0xFF66BB6A : 0xFF2E7D32;
         context.fill(okButtonX, buttonY, okButtonX + buttonWidth, buttonY + 20, okColor);
         String okText = "OK";
-        int okTextWidth = this.textRenderer.getWidth(okText);
-        context.drawText(this.textRenderer, Text.literal(okText), okButtonX + (buttonWidth - okTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
+        int okTextWidth = this.font.width(okText);
+        context.drawString(this.font, Component.literal(okText), okButtonX + (buttonWidth - okTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
         // Cancel button
         int cancelButtonX = (this.width / 2) + (buttonSpacing / 2);
@@ -94,15 +97,17 @@ public class ImportBannerScreen extends Screen {
         int cancelColor = cancelHovered ? 0xFFFF6B6B : 0xFFCC0000;
         context.fill(cancelButtonX, buttonY, cancelButtonX + buttonWidth, buttonY + 20, cancelColor);
         String cancelText = "Cancel";
-        int cancelTextWidth = this.textRenderer.getWidth(cancelText);
-        context.drawText(this.textRenderer, Text.literal(cancelText), cancelButtonX + (buttonWidth - cancelTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
+        int cancelTextWidth = this.font.width(cancelText);
+        context.drawString(this.font, Component.literal(cancelText), cancelButtonX + (buttonWidth - cancelTextWidth) / 2, buttonY + 6, 0xFFFFFFFF, true);
 
         super.render(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button != 0) return false;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() != 0) return false;
+        double mouseX = event.x();
+        double mouseY = event.y();
 
         int editorX = (this.width - EDITOR_WIDTH) / 2;
         int editorY = (this.height - EDITOR_HEIGHT) / 2;
@@ -120,7 +125,7 @@ public class ImportBannerScreen extends Screen {
         // Cancel button
         int cancelButtonX = (this.width / 2) + (buttonSpacing / 2);
         if (mouseX >= cancelButtonX && mouseX < cancelButtonX + buttonWidth && mouseY >= buttonY && mouseY < buttonY + 20) {
-            this.client.setScreen(previousScreen);
+            this.minecraft.setScreen(previousScreen);
             return true;
         }
 
@@ -141,13 +146,12 @@ public class ImportBannerScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         String text = textBuffer.toString();
-        boolean isCtrlPressed = (modifiers & 2) != 0; // GLFW_MOD_CONTROL
 
-        // Ctrl+V for paste
-        if (isCtrlPressed && keyCode == 86) { // V key
-            String clipboard = this.client.keyboard.getClipboard();
+        if (event.isPaste()) {
+            String clipboard = this.minecraft.keyboardHandler.getClipboard();
             if (clipboard != null && !clipboard.isEmpty()) {
                 textBuffer.insert(cursorPos, clipboard);
                 cursorPos += clipboard.length();
@@ -198,11 +202,12 @@ public class ImportBannerScreen extends Screen {
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
+        char chr = (char) event.codepoint();
         if (chr >= 32 && chr <= 126) { // Printable ASCII
             textBuffer.insert(cursorPos, chr);
             cursorPos++;
@@ -256,7 +261,7 @@ public class ImportBannerScreen extends Screen {
         BannerStorage storage = BannerStorage.getInstance();
         if (storage.importBannerFromJson(input) != null) {
             Loombook.LOGGER.info("Banner imported successfully");
-            this.client.setScreen(previousScreen);
+            this.minecraft.setScreen(previousScreen);
         } else {
             String format = input.startsWith("/give") ? "/give command" : "JSON";
             Loombook.LOGGER.error("Failed to import banner - invalid {}", format);
@@ -264,8 +269,8 @@ public class ImportBannerScreen extends Screen {
     }
 
     @Override
-    public void close() {
-        this.client.setScreen(previousScreen);
+    public void onClose() {
+        this.minecraft.setScreen(previousScreen);
     }
 
     @Override
