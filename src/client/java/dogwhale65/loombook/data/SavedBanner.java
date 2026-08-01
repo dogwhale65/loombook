@@ -80,43 +80,43 @@ public class SavedBanner {
     public Item getBaseBannerItem() {
         DyeColor color = getBaseColorEnum();
         return switch (color) {
-            case WHITE -> Items.WHITE_BANNER;
-            case ORANGE -> Items.ORANGE_BANNER;
-            case MAGENTA -> Items.MAGENTA_BANNER;
-            case LIGHT_BLUE -> Items.LIGHT_BLUE_BANNER;
-            case YELLOW -> Items.YELLOW_BANNER;
-            case LIME -> Items.LIME_BANNER;
-            case PINK -> Items.PINK_BANNER;
-            case GRAY -> Items.GRAY_BANNER;
-            case LIGHT_GRAY -> Items.LIGHT_GRAY_BANNER;
-            case CYAN -> Items.CYAN_BANNER;
-            case PURPLE -> Items.PURPLE_BANNER;
-            case BLUE -> Items.BLUE_BANNER;
-            case BROWN -> Items.BROWN_BANNER;
-            case GREEN -> Items.GREEN_BANNER;
-            case RED -> Items.RED_BANNER;
-            case BLACK -> Items.BLACK_BANNER;
+            case WHITE -> Items.BANNER.white();
+            case ORANGE -> Items.BANNER.orange();
+            case MAGENTA -> Items.BANNER.magenta();
+            case LIGHT_BLUE -> Items.BANNER.lightBlue();
+            case YELLOW -> Items.BANNER.yellow();
+            case LIME -> Items.BANNER.lime();
+            case PINK -> Items.BANNER.pink();
+            case GRAY -> Items.BANNER.gray();
+            case LIGHT_GRAY -> Items.BANNER.lightGray();
+            case CYAN -> Items.BANNER.cyan();
+            case PURPLE -> Items.BANNER.purple();
+            case BLUE -> Items.BANNER.blue();
+            case BROWN -> Items.BANNER.brown();
+            case GREEN -> Items.BANNER.green();
+            case RED -> Items.BANNER.red();
+            case BLACK -> Items.BANNER.black();
         };
     }
 
     public static Item getDyeItem(DyeColor color) {
         return switch (color) {
-            case WHITE -> Items.WHITE_DYE;
-            case ORANGE -> Items.ORANGE_DYE;
-            case MAGENTA -> Items.MAGENTA_DYE;
-            case LIGHT_BLUE -> Items.LIGHT_BLUE_DYE;
-            case YELLOW -> Items.YELLOW_DYE;
-            case LIME -> Items.LIME_DYE;
-            case PINK -> Items.PINK_DYE;
-            case GRAY -> Items.GRAY_DYE;
-            case LIGHT_GRAY -> Items.LIGHT_GRAY_DYE;
-            case CYAN -> Items.CYAN_DYE;
-            case PURPLE -> Items.PURPLE_DYE;
-            case BLUE -> Items.BLUE_DYE;
-            case BROWN -> Items.BROWN_DYE;
-            case GREEN -> Items.GREEN_DYE;
-            case RED -> Items.RED_DYE;
-            case BLACK -> Items.BLACK_DYE;
+            case WHITE -> Items.DYE.white();
+            case ORANGE -> Items.DYE.orange();
+            case MAGENTA -> Items.DYE.magenta();
+            case LIGHT_BLUE -> Items.DYE.lightBlue();
+            case YELLOW -> Items.DYE.yellow();
+            case LIME -> Items.DYE.lime();
+            case PINK -> Items.DYE.pink();
+            case GRAY -> Items.DYE.gray();
+            case LIGHT_GRAY -> Items.DYE.lightGray();
+            case CYAN -> Items.DYE.cyan();
+            case PURPLE -> Items.DYE.purple();
+            case BLUE -> Items.DYE.blue();
+            case BROWN -> Items.DYE.brown();
+            case GREEN -> Items.DYE.green();
+            case RED -> Items.DYE.red();
+            case BLACK -> Items.DYE.black();
         };
     }
 }

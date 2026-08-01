@@ -209,7 +209,7 @@ public class LoomSidePanel {
         // Check import button
         if (isInImportButton(mx, my)) {
             Loombook.LOGGER.info("Import button clicked!");
-            Minecraft.getInstance().setScreen(new ImportBannerScreen(screen));
+            Minecraft.getInstance().gui.setScreen(new ImportBannerScreen(screen));
             return true;
         }
 
@@ -256,7 +256,7 @@ public class LoomSidePanel {
                 // Check if rename button clicked
                 int renameX = x + PANEL_WIDTH - PADDING - 26;
                 if (mx >= renameX && mx < renameX + 10 && my >= entryY + 6 && my < entryY + 16) {
-                    Minecraft.getInstance().setScreen(new RenameBannerScreen(screen, banner.getId(), banner.getName()));
+                    Minecraft.getInstance().gui.setScreen(new RenameBannerScreen(screen, banner.getId(), banner.getName()));
                     return true;
                 }
 
@@ -490,7 +490,7 @@ public class LoomSidePanel {
 
             if (isInPatternEntry(mx, my, entryY)) {
                 // Open materials screen
-                Minecraft.getInstance().setScreen(new BannerMaterialsScreen(screen, banner));
+                Minecraft.getInstance().gui.setScreen(new BannerMaterialsScreen(screen, banner));
                 return true;
             }
         }

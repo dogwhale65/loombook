@@ -100,7 +100,7 @@ public class RenameBannerScreen extends Screen {
         // Cancel button
         int cancelButtonX = (this.width / 2) + 10;
         if (mouseX >= cancelButtonX && mouseX < cancelButtonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20) {
-            this.minecraft.setScreen(previousScreen);
+            this.minecraft.gui.setScreen(previousScreen);
             return true;
         }
 
@@ -170,12 +170,12 @@ public class RenameBannerScreen extends Screen {
 
         BannerStorage.getInstance().renameBanner(bannerId, newName);
         Loombook.LOGGER.info("Banner renamed to: {}", newName);
-        this.minecraft.setScreen(previousScreen);
+        this.minecraft.gui.setScreen(previousScreen);
     }
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(previousScreen);
+        this.minecraft.gui.setScreen(previousScreen);
     }
 
     @Override

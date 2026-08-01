@@ -114,22 +114,22 @@ public class BannerPreviewRenderer {
 
     private static DyeColor getBannerColor(ItemStack stack) {
         var item = stack.getItem();
-        if (item == Items.WHITE_BANNER) return DyeColor.WHITE;
-        if (item == Items.ORANGE_BANNER) return DyeColor.ORANGE;
-        if (item == Items.MAGENTA_BANNER) return DyeColor.MAGENTA;
-        if (item == Items.LIGHT_BLUE_BANNER) return DyeColor.LIGHT_BLUE;
-        if (item == Items.YELLOW_BANNER) return DyeColor.YELLOW;
-        if (item == Items.LIME_BANNER) return DyeColor.LIME;
-        if (item == Items.PINK_BANNER) return DyeColor.PINK;
-        if (item == Items.GRAY_BANNER) return DyeColor.GRAY;
-        if (item == Items.LIGHT_GRAY_BANNER) return DyeColor.LIGHT_GRAY;
-        if (item == Items.CYAN_BANNER) return DyeColor.CYAN;
-        if (item == Items.PURPLE_BANNER) return DyeColor.PURPLE;
-        if (item == Items.BLUE_BANNER) return DyeColor.BLUE;
-        if (item == Items.BROWN_BANNER) return DyeColor.BROWN;
-        if (item == Items.GREEN_BANNER) return DyeColor.GREEN;
-        if (item == Items.RED_BANNER) return DyeColor.RED;
-        if (item == Items.BLACK_BANNER) return DyeColor.BLACK;
+        if (item == Items.BANNER.white()) return DyeColor.WHITE;
+        if (item == Items.BANNER.orange()) return DyeColor.ORANGE;
+        if (item == Items.BANNER.magenta()) return DyeColor.MAGENTA;
+        if (item == Items.BANNER.lightBlue()) return DyeColor.LIGHT_BLUE;
+        if (item == Items.BANNER.yellow()) return DyeColor.YELLOW;
+        if (item == Items.BANNER.lime()) return DyeColor.LIME;
+        if (item == Items.BANNER.pink()) return DyeColor.PINK;
+        if (item == Items.BANNER.gray()) return DyeColor.GRAY;
+        if (item == Items.BANNER.lightGray()) return DyeColor.LIGHT_GRAY;
+        if (item == Items.BANNER.cyan()) return DyeColor.CYAN;
+        if (item == Items.BANNER.purple()) return DyeColor.PURPLE;
+        if (item == Items.BANNER.blue()) return DyeColor.BLUE;
+        if (item == Items.BANNER.brown()) return DyeColor.BROWN;
+        if (item == Items.BANNER.green()) return DyeColor.GREEN;
+        if (item == Items.BANNER.red()) return DyeColor.RED;
+        if (item == Items.BANNER.black()) return DyeColor.BLACK;
         return null;
     }
 }

@@ -125,7 +125,7 @@ public class ImportBannerScreen extends Screen {
         // Cancel button
         int cancelButtonX = (this.width / 2) + (buttonSpacing / 2);
         if (mouseX >= cancelButtonX && mouseX < cancelButtonX + buttonWidth && mouseY >= buttonY && mouseY < buttonY + 20) {
-            this.minecraft.setScreen(previousScreen);
+            this.minecraft.gui.setScreen(previousScreen);
             return true;
         }
 
@@ -261,7 +261,7 @@ public class ImportBannerScreen extends Screen {
         BannerStorage storage = BannerStorage.getInstance();
         if (storage.importBannerFromJson(input) != null) {
             Loombook.LOGGER.info("Banner imported successfully");
-            this.minecraft.setScreen(previousScreen);
+            this.minecraft.gui.setScreen(previousScreen);
         } else {
             String format = input.startsWith("/give") ? "/give command" : "JSON";
             Loombook.LOGGER.error("Failed to import banner - invalid {}", format);
@@ -270,7 +270,7 @@ public class ImportBannerScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(previousScreen);
+        this.minecraft.gui.setScreen(previousScreen);
     }
 
     @Override

@@ -111,7 +111,7 @@ public class BannerMaterialsScreen extends Screen {
 
         // Close button
         if (mouseX >= buttonX && mouseX < buttonX + 50 && mouseY >= buttonY && mouseY < buttonY + 20) {
-            this.minecraft.setScreen(previousScreen);
+            this.minecraft.gui.setScreen(previousScreen);
             return true;
         }
 
@@ -223,7 +223,7 @@ public class BannerMaterialsScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(previousScreen);
+        this.minecraft.gui.setScreen(previousScreen);
     }
 
     @Override
